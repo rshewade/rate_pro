@@ -54,7 +54,8 @@ export function Calculator() {
   }
 
   const getSelectedOptionId = (factorId) => {
-    const selection = selectedFactors.find((sf) => sf.factor_id === factorId)
+    // Use == for comparison to handle string/number type differences
+    const selection = selectedFactors.find((sf) => sf.factor_id == factorId)
     return selection ? String(selection.option_id) : ''
   }
 
@@ -99,7 +100,7 @@ Configuration:
 ${visibleFactors
   .map((factor) => {
     const selectedOption = serviceFactorOptions.find(
-      (o) => o.id === Number(getSelectedOptionId(factor.id))
+      (o) => o.id == getSelectedOptionId(factor.id)
     )
     return `  ${factor.name}: ${selectedOption?.label || 'N/A'}`
   })
@@ -354,8 +355,9 @@ This is an estimate only. Final pricing may vary based on specific requirements.
               <Label className="text-muted-foreground">Configuration</Label>
               <div className="mt-2 space-y-1">
                 {visibleFactors.map((factor) => {
+                  // Use == for comparison to handle string/number type differences
                   const selectedOption = serviceFactorOptions.find(
-                    (o) => o.id === Number(getSelectedOptionId(factor.id))
+                    (o) => o.id == getSelectedOptionId(factor.id)
                   )
                   return (
                     <div key={factor.id} className="flex justify-between text-sm">
@@ -368,7 +370,7 @@ This is an estimate only. Final pricing may vary based on specific requirements.
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Entity Type:</span>
                     <span>
-                      {entityTypes.find((e) => e.id === selectedEntityTypeId)?.name || 'N/A'}
+                      {entityTypes.find((e) => e.id == selectedEntityTypeId)?.name || 'N/A'}
                     </span>
                   </div>
                 )}
