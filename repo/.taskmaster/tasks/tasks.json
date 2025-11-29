@@ -283,7 +283,7 @@
           "5",
           "2"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -291,9 +291,10 @@
             "description": "Design and implement a user-friendly form to capture essential customer details such as Company, Contact Name, Email, and other relevant fields.",
             "dependencies": [],
             "details": "Develop a single-column form with logically grouped fields, starting with easiest inputs like name and email, clearly marking required fields, and providing inline validation and error messages. Use native input types for better UX, e.g., email and date pickers. Ensure accessibility and mobile responsiveness.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Validate form field presence, required field enforcement, inline validation, and usability on desktop and mobile devices.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T12:03:48.113Z"
           },
           {
             "id": 2,
@@ -301,9 +302,10 @@
             "description": "Develop backend logic to generate unique quote numbers for each new quote to ensure traceability and avoid duplication.",
             "dependencies": [],
             "details": "Create a system that generates sequential or otherwise unique identifiers for quotes, ensuring thread-safe and collision-free generation. Integrate this logic with quote creation workflows so each saved quote receives a unique number.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test uniqueness of generated quote numbers under concurrent quote creation scenarios and verify correct assignment to saved quotes.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T12:03:48.117Z"
           },
           {
             "id": 3,
@@ -311,9 +313,10 @@
             "description": "Implement logic to set default expiration dates for quotes based on configurable parameters, allowing flexibility in quote validity periods.",
             "dependencies": [],
             "details": "Create a mechanism to calculate expiration dates automatically when a quote is generated, using configurable settings (e.g., number of days from creation). Allow for overrides if needed. Integrate this with quote data before saving.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify default expiration dates are correctly calculated and applied according to configuration, including edge cases and overrides.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T12:03:48.120Z"
           },
           {
             "id": 4,
@@ -325,14 +328,16 @@
               3
             ],
             "details": "Develop backend APIs and database schema to store all relevant quote information. Ensure the initial status field is set to 'Draft' upon creation. Integrate with front-end form submission and quote number and expiration logic.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test saving of complete quote data, verify initial status is 'Draft', confirm data integrity and retrieval from backend.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T12:03:48.124Z"
           }
         ],
         "complexity": 7,
         "recommendedSubtasks": 4,
-        "expansionPrompt": "Divide into subtasks for customer info form creation, unique quote number generation, expiration date logic, and saving quote data with initial status."
+        "expansionPrompt": "Divide into subtasks for customer info form creation, unique quote number generation, expiration date logic, and saving quote data with initial status.",
+        "updatedAt": "2025-11-29T12:03:48.124Z"
       },
       {
         "id": "7",
@@ -345,7 +350,7 @@
           "6",
           "2"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -353,9 +358,10 @@
             "description": "Develop the user interface to display a list of quotes with capabilities for filtering by various criteria and searching by keywords.",
             "dependencies": [],
             "details": "Create a responsive Quote List View component that supports filtering options such as date range, status, and customer, as well as a search bar to find quotes by text input. Ensure integration with backend APIs to fetch filtered and searched data dynamically.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test UI responsiveness, verify filtering and search return correct results, and validate integration with backend data sources.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T12:25:44.623Z"
           },
           {
             "id": 2,
@@ -365,9 +371,10 @@
               1
             ],
             "details": "Design and implement the Quote Detail View component that displays comprehensive information about a selected quote, including line items breakdown, chronological status updates, and user notes. Ensure data consistency and smooth navigation from the list view.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify correct display of all quote details, test navigation from list to detail view, and validate data accuracy for line items, status history, and notes.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T12:25:44.627Z"
           },
           {
             "id": 3,
@@ -377,9 +384,10 @@
               2
             ],
             "details": "Develop backend and frontend logic to allow users to change quote statuses (e.g., Draft, Sent, Approved) and implement automatic expiration of quotes after their expiration date passes. Include notifications or UI indicators for expired quotes.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test manual status updates for correctness, verify automatic expiration triggers at the right time, and confirm UI reflects current status accurately.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T12:25:44.633Z"
           },
           {
             "id": 4,
@@ -389,9 +397,10 @@
               3
             ],
             "details": "Implement editing interfaces and validation for draft quotes, allowing changes to line items, customer info, and pricing factors. Ensure that edits are saved correctly and do not affect sent or finalized quotes.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test editing workflows on draft quotes, validate data persistence, and ensure editing is disabled for non-draft statuses.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T12:25:44.638Z"
           },
           {
             "id": 5,
@@ -401,14 +410,16 @@
               4
             ],
             "details": "Develop versioning logic to create a new quote version when edits are needed on sent quotes. Maintain history of versions with timestamps and status. Provide UI to view and manage different versions of a quote.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify version creation triggers correctly, test version history display, and ensure previous versions remain immutable.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T12:25:44.641Z"
           }
         ],
         "complexity": 7,
         "recommendedSubtasks": 5,
-        "expansionPrompt": "Break down into subtasks for quote list view with filtering/search, quote detail view, status updates and expiration handling, editing draft quotes, and versioning sent quotes."
+        "expansionPrompt": "Break down into subtasks for quote list view with filtering/search, quote detail view, status updates and expiration handling, editing draft quotes, and versioning sent quotes.",
+        "updatedAt": "2025-11-29T12:25:44.641Z"
       },
       {
         "id": "8",
@@ -420,11 +431,12 @@
         "dependencies": [
           "7"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [],
         "complexity": 6,
         "recommendedSubtasks": 3,
-        "expansionPrompt": "Create subtasks for designing quote preview UI, integrating PDF generation library, and ensuring multi-service quote export correctness."
+        "expansionPrompt": "Create subtasks for designing quote preview UI, integrating PDF generation library, and ensuring multi-service quote export correctness.",
+        "updatedAt": "2025-11-29T12:51:54.409Z"
       },
       {
         "id": "9",
@@ -437,7 +449,7 @@
           "1",
           "2"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -445,9 +457,10 @@
             "description": "Develop full Create, Read, Update, Delete (CRUD) functionality for managing the service catalog as per FR-16.",
             "dependencies": [],
             "details": "Create React components using Shadcn UI to list services, add new services, edit existing services, and delete services. Integrate with backend API endpoints to persist changes. Ensure validation and error handling for service data.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test all CRUD operations for services including form validation, successful data persistence, and UI updates.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T11:28:48.936Z"
           },
           {
             "id": 2,
@@ -457,9 +470,10 @@
               1
             ],
             "details": "Build React components to display pricing factors linked to services, allow creation, editing, and deletion of pricing factors. Use Shadcn UI components for consistent styling. Connect to backend APIs to save pricing factor data.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify CRUD operations on pricing factors work correctly and pricing factors are correctly associated with services.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T11:28:48.941Z"
           },
           {
             "id": 3,
@@ -469,9 +483,10 @@
               2
             ],
             "details": "Design UI components to add, edit, and delete factor options under each pricing factor. Include fields for price impact types and values. Ensure data validation and backend integration for persistence.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test creation, update, and deletion of factor options and confirm price impact data is saved and reflected properly.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T11:28:48.948Z"
           },
           {
             "id": 4,
@@ -479,9 +494,10 @@
             "description": "Provide full CRUD operations for business entity types and their pricing modifiers as per FR-20.",
             "dependencies": [],
             "details": "Develop React components with Shadcn UI to list, create, update, and delete business entity types and associated pricing modifiers. Integrate with backend services to persist changes.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Validate all CRUD operations for business entity types and modifiers, including data integrity and UI consistency.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T11:28:48.951Z"
           },
           {
             "id": 5,
@@ -491,9 +507,10 @@
               1
             ],
             "details": "Create UI components to list add-ons, assign them globally or to specific services, and configure pricing modifiers. Use Shadcn UI for consistent look and feel. Connect to backend APIs for data operations.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test add-on creation, assignment, modification, and deletion. Confirm pricing modifiers are correctly applied and saved.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T11:28:48.956Z"
           },
           {
             "id": 6,
@@ -507,14 +524,16 @@
               5
             ],
             "details": "Review all admin panel components and replace or style them using Shadcn UI components. Ensure uniform design patterns, responsive layouts, and accessibility compliance.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Perform UI/UX testing to verify consistent styling, responsiveness, and usability across all admin panel pages.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2025-11-29T11:28:48.961Z"
           }
         ],
         "complexity": 8,
         "recommendedSubtasks": 6,
-        "expansionPrompt": "Expand into subtasks for service catalog CRUD, pricing factors management, factor options configuration, business entity types CRUD, add-ons management, and UI consistency with Shadcn components."
+        "expansionPrompt": "Expand into subtasks for service catalog CRUD, pricing factors management, factor options configuration, business entity types CRUD, add-ons management, and UI consistency with Shadcn components.",
+        "updatedAt": "2025-11-29T11:28:48.961Z"
       },
       {
         "id": "10",
@@ -602,9 +621,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-11-29T11:09:54.187Z",
+      "lastModified": "2025-11-29T12:51:54.410Z",
       "taskCount": 11,
-      "completedCount": 5,
+      "completedCount": 9,
       "tags": [
         "master"
       ]

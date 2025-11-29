@@ -22,8 +22,10 @@ import {
   Phone,
   FileText,
   AlertCircle,
+  Eye,
 } from 'lucide-react'
 import api from '@/services/api'
+import { QuotePreview } from './QuotePreview'
 
 const STATUS_OPTIONS = [
   { value: 'draft', label: 'Draft', icon: FileText },
@@ -56,6 +58,7 @@ export function QuoteDetail({ quote, onBack, onQuoteUpdated }) {
   const [showStatusDialog, setShowStatusDialog] = React.useState(false)
   const [newStatus, setNewStatus] = React.useState('')
   const [showVersionDialog, setShowVersionDialog] = React.useState(false)
+  const [showPreview, setShowPreview] = React.useState(false)
 
   React.useEffect(() => {
     async function fetchDetails() {
@@ -240,6 +243,15 @@ export function QuoteDetail({ quote, onBack, onQuoteUpdated }) {
               Create Version
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => setShowPreview(true)}
+          >
+            <Eye className="h-4 w-4" />
+            Preview PDF
+          </Button>
           <Button
             size="sm"
             className="gap-2"
@@ -465,6 +477,20 @@ export function QuoteDetail({ quote, onBack, onQuoteUpdated }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Quote Preview Dialog */}
+      <QuotePreview
+        open={showPreview}
+        onOpenChange={setShowPreview}
+        quote={quote}
+        customer={customer}
+        lineItems={lineItems}
+        services={services}
+        entityTypes={entityTypes}
+        pricingFactors={pricingFactors}
+        factorOptions={factorOptions}
+        addons={addons}
+      />
     </div>
   )
 }
