@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/Label'
 import { Separator } from '@/components/ui/Separator'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { AlertCircle, RefreshCw, Calculator as CalcIcon, Download } from 'lucide-react'
+import { SaveQuoteDialog } from '@/components/quote'
+import { AlertCircle, RefreshCw, Calculator as CalcIcon, Download, Save } from 'lucide-react'
 
 /**
  * Main Calculator Component
@@ -22,7 +23,9 @@ export function Calculator() {
     selectedService,
     selectedFactors,
     selectedEntityTypeId,
+    selectedEntityType,
     selectedAddonIds,
+    selectedAddons,
     serviceFactorOptions,
     visibleFactors,
     availableAddons,
@@ -42,6 +45,7 @@ export function Calculator() {
   })
 
   const [showResult, setShowResult] = React.useState(false)
+  const [showSaveDialog, setShowSaveDialog] = React.useState(false)
 
   const handleCalculatePrice = () => {
     if (validateForm()) {
@@ -322,10 +326,16 @@ This is an estimate only. Final pricing may vary based on specific requirements.
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Your Quote</CardTitle>
-              <Button variant="outline" size="sm" onClick={exportQuote}>
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={exportQuote}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+                <Button size="sm" onClick={() => setShowSaveDialog(true)}>
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Quote
+                </Button>
+              </div>
             </div>
             <CardDescription>{new Date().toLocaleString()}</CardDescription>
           </CardHeader>
@@ -427,6 +437,21 @@ This is an estimate only. Final pricing may vary based on specific requirements.
           </CardContent>
         </Card>
       )}
+
+      {/* Save Quote Dialog */}
+      <SaveQuoteDialog
+        open={showSaveDialog}
+        onOpenChange={setShowSaveDialog}
+        service={selectedService}
+        selectedFactors={selectedFactors}
+        entityType={selectedEntityType}
+        selectedAddons={selectedAddons}
+        calculationResult={calculationResult}
+        entityTypes={entityTypes}
+        onQuoteSaved={(quote) => {
+          console.log('Quote saved:', quote)
+        }}
+      />
     </div>
   )
 }
