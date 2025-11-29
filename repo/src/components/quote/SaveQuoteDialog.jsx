@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Separator } from '@/components/ui/Separator'
 import { CustomerForm } from './CustomerForm'
 import { validateCustomer, createQuoteFromCalculation, formatExpirationDate } from '@/lib/quote'
+import { logQuoteCreated } from '@/lib/audit'
 import { Save, FileText, CheckCircle } from 'lucide-react'
 import api from '@/services/api'
 
@@ -96,6 +97,9 @@ export function SaveQuoteDialog({
         quote_id: createdQuote.id,
       }
       await api.quoteLineItems.create(lineItemToSave)
+
+      // 4. Create audit log entry
+      await logQuoteCreated(createdQuote)
 
       // Set saved quote for success state
       setSavedQuote(createdQuote)

@@ -9,7 +9,8 @@ import { FactorOptionsTable } from './FactorOptionsTable'
 import { AddonsTable } from './AddonsTable'
 import { FactorDependenciesTable } from './FactorDependenciesTable'
 import { TestCalculator } from './TestCalculator'
-import { RefreshCw, AlertCircle, Package, Building2, Sliders, Puzzle, Link2, Calculator } from 'lucide-react'
+import { AuditLogTable } from './AuditLogTable'
+import { RefreshCw, AlertCircle, Package, Building2, Sliders, Puzzle, Link2, Calculator, History } from 'lucide-react'
 import api from '@/services/api'
 
 export function AdminPanel() {
@@ -128,7 +129,7 @@ export function AdminPanel() {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-6 mb-6">
+            <TabsList className="grid w-full grid-cols-7 mb-6">
               <TabsTrigger value="services" className="gap-2">
                 <Package className="h-4 w-4" />
                 Services
@@ -152,6 +153,10 @@ export function AdminPanel() {
               <TabsTrigger value="test" className="gap-2">
                 <Calculator className="h-4 w-4" />
                 Test
+              </TabsTrigger>
+              <TabsTrigger value="audit" className="gap-2">
+                <History className="h-4 w-4" />
+                Audit
               </TabsTrigger>
             </TabsList>
 
@@ -196,6 +201,10 @@ export function AdminPanel() {
                 addons={data.addons}
                 dependencies={data.factorDependencies}
               />
+            </TabsContent>
+
+            <TabsContent value="audit">
+              <AuditLogTable />
             </TabsContent>
           </Tabs>
         </CardContent>

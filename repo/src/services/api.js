@@ -110,6 +110,14 @@ export const factorDependenciesApi = {
   delete: (id) => fetchApi(`/factor_dependencies/${id}`, { method: 'DELETE' }),
 }
 
+// Audit Logs API
+export const auditLogsApi = {
+  getAll: () => fetchApi('/audit_logs?_sort=timestamp&_order=desc'),
+  getByEntityType: (entityType) => fetchApi(`/audit_logs?entity_type=${entityType}&_sort=timestamp&_order=desc`),
+  getByEntityId: (entityType, entityId) => fetchApi(`/audit_logs?entity_type=${entityType}&entity_id=${entityId}&_sort=timestamp&_order=desc`),
+  create: (data) => fetchApi('/audit_logs', { method: 'POST', body: JSON.stringify(data) }),
+}
+
 export default {
   services: servicesApi,
   pricingFactors: pricingFactorsApi,
@@ -120,4 +128,5 @@ export default {
   customers: customersApi,
   quoteLineItems: quoteLineItemsApi,
   factorDependencies: factorDependenciesApi,
+  auditLogs: auditLogsApi,
 }

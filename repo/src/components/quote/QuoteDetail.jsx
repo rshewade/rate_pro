@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/Separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog'
 import { formatExpirationDate, isQuoteExpired } from '@/lib/quote'
+import { logQuoteStatusChange, logQuoteVersionCreated } from '@/lib/audit'
 import {
   ArrowLeft,
   Edit,
@@ -133,6 +134,7 @@ export function QuoteDetail({ quote, onBack, onQuoteUpdated }) {
     if (!newStatus || newStatus === quote.status) return
 
     setIsUpdating(true)
+    const oldStatus = quote.status
     try {
       const updatedQuote = {
         ...quote,
@@ -140,6 +142,10 @@ export function QuoteDetail({ quote, onBack, onQuoteUpdated }) {
         updated_at: new Date().toISOString(),
       }
       await api.quotes.update(quote.id, updatedQuote)
+
+      // Log the status change
+      await logQuoteStatusChange(updatedQuote, oldStatus, newStatus)
+
       setShowStatusDialog(false)
       if (onQuoteUpdated) {
         onQuoteUpdated(updatedQuote)
@@ -188,6 +194,9 @@ export function QuoteDetail({ quote, onBack, onQuoteUpdated }) {
           quote_id: createdQuote.id,
         })
       }
+
+      // Log version creation
+      await logQuoteVersionCreated(createdQuote, quote)
 
       setShowVersionDialog(false)
       if (onQuoteUpdated) {
