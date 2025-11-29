@@ -225,7 +225,8 @@ This is an estimate only. Final pricing may vary based on specific requirements.
               <div className="space-y-4">
                 <h3 className="text-base font-medium">Service Configuration</h3>
                 {visibleFactors.map((factor) => {
-                  const options = serviceFactorOptions.filter((o) => o.factor_id === factor.id)
+                  // Use == for comparison to handle string/number type differences from json-server
+                  const options = serviceFactorOptions.filter((o) => o.factor_id == factor.id)
                   return (
                     <div key={factor.id} className="space-y-2">
                       <Label>{factor.name}</Label>
