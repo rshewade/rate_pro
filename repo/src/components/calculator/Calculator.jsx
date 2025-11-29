@@ -25,6 +25,7 @@ export function Calculator() {
     selectedAddonIds,
     serviceFactorOptions,
     visibleFactors,
+    availableAddons,
     calculationResult,
     validation,
     handleServiceSelect,
@@ -275,12 +276,12 @@ This is an estimate only. Final pricing may vary based on specific requirements.
           )}
 
           {/* Add-ons */}
-          {selectedServiceId && addons.length > 0 && (
+          {selectedServiceId && availableAddons.length > 0 && (
             <>
               <Separator />
               <div className="space-y-3">
                 <h3 className="text-base font-medium">Optional Add-ons</h3>
-                {addons.map((addon) => (
+                {availableAddons.map((addon) => (
                   <label
                     key={addon.id}
                     className="flex items-center gap-3 p-3 rounded-md bg-[#f3f3f5] hover:bg-[#e9e9ec] cursor-pointer transition-colors"

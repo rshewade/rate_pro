@@ -39,6 +39,9 @@ export const pricingFactorsApi = {
   getAll: () => fetchApi('/pricing_factors'),
   getByServiceId: (serviceId) => fetchApi(`/pricing_factors?service_id=${serviceId}`),
   getById: (id) => fetchApi(`/pricing_factors/${id}`),
+  create: (data) => fetchApi('/pricing_factors', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) => fetchApi(`/pricing_factors/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id) => fetchApi(`/pricing_factors/${id}`, { method: 'DELETE' }),
 }
 
 // Factor Options API
@@ -46,12 +49,18 @@ export const factorOptionsApi = {
   getAll: () => fetchApi('/factor_options'),
   getByFactorId: (factorId) => fetchApi(`/factor_options?factor_id=${factorId}`),
   getById: (id) => fetchApi(`/factor_options/${id}`),
+  create: (data) => fetchApi('/factor_options', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) => fetchApi(`/factor_options/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id) => fetchApi(`/factor_options/${id}`, { method: 'DELETE' }),
 }
 
 // Business Entity Types API
 export const entityTypesApi = {
   getAll: () => fetchApi('/business_entity_types'),
   getById: (id) => fetchApi(`/business_entity_types/${id}`),
+  create: (data) => fetchApi('/business_entity_types', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) => fetchApi(`/business_entity_types/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id) => fetchApi(`/business_entity_types/${id}`, { method: 'DELETE' }),
 }
 
 // Add-ons API
@@ -59,6 +68,9 @@ export const addonsApi = {
   getAll: () => fetchApi('/addons'),
   getGlobal: () => fetchApi('/addons?is_global=true'),
   getByServiceId: (serviceId) => fetchApi(`/addons?service_ids_like=${serviceId}`),
+  create: (data) => fetchApi('/addons', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) => fetchApi(`/addons/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id) => fetchApi(`/addons/${id}`, { method: 'DELETE' }),
 }
 
 // Quotes API

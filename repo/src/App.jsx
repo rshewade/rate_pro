@@ -1,8 +1,12 @@
+import * as React from 'react'
 import { Calculator } from '@/components/calculator'
+import { AdminPanel } from '@/components/admin'
 import { Calculator as CalcIcon, Settings, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
 function App() {
+  const [view, setView] = React.useState('calculator')
+
   const handleClearCache = () => {
     localStorage.clear()
     window.location.reload()
@@ -27,11 +31,19 @@ function App() {
 
             {/* Navigation */}
             <nav className="flex items-center gap-2">
-              <Button className="gap-2">
+              <Button
+                variant={view === 'calculator' ? 'default' : 'outline'}
+                className="gap-2"
+                onClick={() => setView('calculator')}
+              >
                 <CalcIcon className="w-4 h-4" />
                 Calculator
               </Button>
-              <Button variant="outline" className="gap-2">
+              <Button
+                variant={view === 'admin' ? 'default' : 'outline'}
+                className="gap-2"
+                onClick={() => setView('admin')}
+              >
                 <Settings className="w-4 h-4" />
                 Admin
               </Button>
@@ -42,7 +54,7 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 py-12 px-6">
-        <Calculator />
+        {view === 'calculator' ? <Calculator /> : <AdminPanel />}
       </main>
 
       {/* Footer */}

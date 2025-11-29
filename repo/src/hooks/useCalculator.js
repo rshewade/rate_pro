@@ -42,6 +42,18 @@ export function useCalculator({
     return entityTypes.find((e) => e.id === selectedEntityTypeId) || null
   }, [entityTypes, selectedEntityTypeId])
 
+  // Filter addons to show only global ones and service-specific ones for selected service
+  const availableAddons = useMemo(() => {
+    if (!selectedServiceId) return []
+    return addons.filter((addon) => {
+      // Global addons are available for all services
+      if (addon.is_global) return true
+      // Service-specific addons must include the selected service
+      if (addon.service_ids && addon.service_ids.includes(selectedServiceId)) return true
+      return false
+    })
+  }, [addons, selectedServiceId])
+
   const selectedAddons = useMemo(() => {
     return addons.filter((a) => selectedAddonIds.includes(a.id))
   }, [addons, selectedAddonIds])
@@ -177,6 +189,7 @@ export function useCalculator({
     serviceFactors,
     serviceFactorOptions,
     visibleFactors,
+    availableAddons,
     calculationResult,
     validation,
 
