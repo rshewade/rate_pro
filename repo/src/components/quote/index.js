@@ -1,2 +1,5 @@
 export { CustomerForm } from './CustomerForm'
 export { SaveQuoteDialog } from './SaveQuoteDialog'
+export { QuoteList } from './QuoteList'
+export { QuoteDetail } from './QuoteDetail'
+export { QuotesManager } from './QuotesManager'

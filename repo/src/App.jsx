@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { Calculator } from '@/components/calculator'
 import { AdminPanel } from '@/components/admin'
-import { Calculator as CalcIcon, Settings, Trash2 } from 'lucide-react'
+import { QuotesManager } from '@/components/quote'
+import { Calculator as CalcIcon, Settings, Trash2, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
 function App() {
@@ -40,6 +41,14 @@ function App() {
                 Calculator
               </Button>
               <Button
+                variant={view === 'quotes' ? 'default' : 'outline'}
+                className="gap-2"
+                onClick={() => setView('quotes')}
+              >
+                <FileText className="w-4 h-4" />
+                Quotes
+              </Button>
+              <Button
                 variant={view === 'admin' ? 'default' : 'outline'}
                 className="gap-2"
                 onClick={() => setView('admin')}
@@ -54,7 +63,9 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 py-12 px-6">
-        {view === 'calculator' ? <Calculator /> : <AdminPanel />}
+        {view === 'calculator' && <Calculator />}
+        {view === 'quotes' && <QuotesManager />}
+        {view === 'admin' && <AdminPanel />}
       </main>
 
       {/* Footer */}
