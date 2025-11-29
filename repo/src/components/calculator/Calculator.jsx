@@ -311,6 +311,7 @@ This is an estimate only. Final pricing may vary based on specific requirements.
           )}
 
           {/* Calculate Button */}
+          {console.log('Button debug:', { selectedServiceId, validation, visibleFactors: visibleFactors.length, selectedFactors })}
           <Button
             className="w-full"
             onClick={handleCalculatePrice}

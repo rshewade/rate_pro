@@ -45,11 +45,12 @@ export function calculateFixedImpacts(selectedFactors, factorOptions, pricingFac
   const details = []
 
   for (const selected of selectedFactors) {
-    const option = factorOptions.find((o) => o.id === selected.option_id)
+    // Use == for comparison to handle string/number type differences from json-server
+    const option = factorOptions.find((o) => o.id == selected.option_id)
     if (!option) continue
 
     if (option.price_impact_type === PriceImpactType.FIXED) {
-      const factor = pricingFactors.find((f) => f.id === selected.factor_id)
+      const factor = pricingFactors.find((f) => f.id == selected.factor_id)
       total += option.price_impact
       details.push({
         factorId: selected.factor_id,
@@ -81,11 +82,12 @@ export function calculatePercentageImpacts(
   const details = []
 
   for (const selected of selectedFactors) {
-    const option = factorOptions.find((o) => o.id === selected.option_id)
+    // Use == for comparison to handle string/number type differences from json-server
+    const option = factorOptions.find((o) => o.id == selected.option_id)
     if (!option) continue
 
     if (option.price_impact_type === PriceImpactType.PERCENTAGE) {
-      const factor = pricingFactors.find((f) => f.id === selected.factor_id)
+      const factor = pricingFactors.find((f) => f.id == selected.factor_id)
       // price_impact is stored as a decimal (e.g., 0.1 for 10%)
       const impact = basePrice * option.price_impact
       total += impact
@@ -115,11 +117,12 @@ export function calculateMultiplierImpacts(selectedFactors, factorOptions, prici
   const details = []
 
   for (const selected of selectedFactors) {
-    const option = factorOptions.find((o) => o.id === selected.option_id)
+    // Use == for comparison to handle string/number type differences from json-server
+    const option = factorOptions.find((o) => o.id == selected.option_id)
     if (!option) continue
 
     if (option.price_impact_type === PriceImpactType.MULTIPLIER) {
-      const factor = pricingFactors.find((f) => f.id === selected.factor_id)
+      const factor = pricingFactors.find((f) => f.id == selected.factor_id)
       combinedMultiplier *= option.price_impact
       details.push({
         factorId: selected.factor_id,
@@ -349,11 +352,12 @@ function createEmptyBreakdown() {
  * @returns {{isValid: boolean, missingFactors: string[]}}
  */
 export function validateRequiredFactors(pricingFactors, selectedFactors) {
-  const selectedFactorIds = new Set(selectedFactors.map((sf) => sf.factor_id))
+  // Use String for comparison to handle type differences from json-server
+  const selectedFactorIds = new Set(selectedFactors.map((sf) => String(sf.factor_id)))
   const missingFactors = []
 
   for (const factor of pricingFactors) {
-    if (factor.is_required && !selectedFactorIds.has(factor.id)) {
+    if (factor.is_required && !selectedFactorIds.has(String(factor.id))) {
       missingFactors.push(factor.name)
     }
   }
@@ -385,7 +389,7 @@ export function detectCircularDependencies(pricingFactors) {
     visited.add(factorId)
     recursionStack.add(factorId)
 
-    const factor = pricingFactors.find((f) => f.id === factorId)
+    const factor = pricingFactors.find((f) => f.id == factorId)
     if (factor?.depends_on_factor_id) {
       const result = dfs(factor.depends_on_factor_id, [...path, factorId])
       if (result.hasCircular) {
