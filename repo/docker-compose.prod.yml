@@ -10,6 +10,8 @@ services:
       - "80:80"
     depends_on:
       - api
+    networks:
+      - ratepro-network
     restart: unless-stopped
 
   # Mock API server for production testing
@@ -22,4 +24,10 @@ services:
       - "3001:3001"
     volumes:
       - ./db.json:/app/db.json
+    networks:
+      - ratepro-network
     restart: unless-stopped
+
+networks:
+  ratepro-network:
+    driver: bridge

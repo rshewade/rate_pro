@@ -13,9 +13,12 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - DOCKER_ENV=true
       - CHOKIDAR_USEPOLLING=true
     depends_on:
       - api
+    networks:
+      - ratepro-network
 
   # Mock API server (json-server)
   api:
@@ -26,3 +29,9 @@ services:
       - "3001:3001"
     volumes:
       - ./db.json:/app/db.json
+    networks:
+      - ratepro-network
+
+networks:
+  ratepro-network:
+    driver: bridge

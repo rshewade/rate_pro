@@ -12,8 +12,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Expose ports for Vite dev server and json-server
-EXPOSE 3000 3001
+# Expose port for Vite dev server
+EXPOSE 3000
 
-# Start development servers
-CMD ["npm", "run", "dev:all"]
+# Start Vite dev server (API runs in separate container)
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
