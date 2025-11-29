@@ -26,7 +26,8 @@ export function useCalculator({
 
   // Derived data
   const selectedService = useMemo(() => {
-    return services.find((s) => s.id === selectedServiceId) || null
+    // Use == for comparison to handle string/number type differences from json-server
+    return services.find((s) => s.id == selectedServiceId) || null
   }, [services, selectedServiceId])
 
   const serviceFactors = useMemo(() => {
@@ -41,7 +42,8 @@ export function useCalculator({
   }, [factorOptions, serviceFactors])
 
   const selectedEntityType = useMemo(() => {
-    return entityTypes.find((e) => e.id === selectedEntityTypeId) || null
+    // Use == for comparison to handle string/number type differences from json-server
+    return entityTypes.find((e) => e.id == selectedEntityTypeId) || null
   }, [entityTypes, selectedEntityTypeId])
 
   // Filter addons to show only global ones and service-specific ones for selected service
