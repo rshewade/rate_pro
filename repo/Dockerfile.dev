@@ -1,0 +1,19 @@
+# Development Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies including devDependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Expose ports for Vite dev server and json-server
+EXPOSE 3000 3001
+
+# Start development servers
+CMD ["npm", "run", "dev:all"]

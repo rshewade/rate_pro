@@ -1,0 +1,613 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": "1",
+        "title": "Setup Development Environment and Infrastructure",
+        "description": "Configure local development environment including Vite dev server on port 3000, json-server mock API on port 3001, and Docker setup for containerization. Establish ESLint and Prettier for code quality and formatting.",
+        "details": "Install and configure Vite with React 19 and Shadcn UI. Setup json-server with initial db.json reflecting MVP data schema. Configure Vite proxy to forward /api requests to json-server to avoid CORS issues. Create Dockerfiles and docker-compose for frontend and mock backend. Integrate ESLint and Prettier with project standards.",
+        "testStrategy": "Verify that frontend runs on port 3000 and can successfully fetch data from json-server on port 3001 via proxy. Run linting and formatting checks. Test Docker containers start and communicate correctly.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [],
+        "complexity": 5,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Break down environment setup into subtasks for Vite and React setup, json-server configuration, Docker containerization, and ESLint/Prettier integration.",
+        "updatedAt": "2025-11-29T09:38:17.434Z"
+      },
+      {
+        "id": "2",
+        "title": "Design and Implement Database Schema in Supabase",
+        "description": "Create PostgreSQL schema in Supabase to support services, pricing factors, factor options, quotes, customers, business entity types, add-ons, and audit trails as per PRD data model.",
+        "details": "Define tables for Services, Pricing Factors, Factor Options (with price_impact and price_impact_type), Business Entity Types, Add-ons, Quotes, Customers, Quote Versions, and Audit Logs. Implement relationships and constraints to enforce data integrity. Prepare migration scripts for deployment.",
+        "testStrategy": "Validate schema correctness by inserting sample data for each table. Ensure foreign key constraints and data types are enforced. Test queries for retrieving service details with pricing factors and options.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design and Implement Services Table Schema",
+            "description": "Create the Services table schema in Supabase PostgreSQL including columns, data types, and constraints as per PRD.",
+            "dependencies": [],
+            "details": "Define the Services table with appropriate columns such as service_id (primary key), name, description, and any relevant attributes. Implement constraints like NOT NULL and unique indexes as needed. Prepare migration scripts for this table.",
+            "status": "pending",
+            "testStrategy": "Insert sample service records and verify constraints and data integrity.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Design and Implement Pricing Factors and Factor Options Schema",
+            "description": "Create tables for Pricing Factors and Factor Options including price impact and price impact type, with relationships and constraints.",
+            "dependencies": [],
+            "details": "Define Pricing Factors table with columns like factor_id, name, description. Define Factor Options table with option_id, factor_id (foreign key), price_impact, price_impact_type (fixed, percentage, multiplier), and other relevant fields. Implement foreign key constraints and indexes. Prepare migration scripts.",
+            "status": "pending",
+            "testStrategy": "Insert sample pricing factors and options, verify foreign key constraints and correct data types.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Design and Implement Business Entity Types and Add-ons Schema",
+            "description": "Create tables for Business Entity Types and Add-ons with necessary columns, relationships, and constraints.",
+            "dependencies": [],
+            "details": "Define Business Entity Types table with entity_type_id, name, description. Define Add-ons table with add_on_id, name, price, and association to services if applicable. Implement constraints and indexes. Prepare migration scripts for deployment.",
+            "status": "pending",
+            "testStrategy": "Test insertion of sample business entity types and add-ons, verify constraints and relationships.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Design and Implement Quotes, Customers, and Quote Versions Schema",
+            "description": "Create tables for Quotes, Customers, and Quote Versions including relationships, constraints, and necessary fields.",
+            "dependencies": [],
+            "details": "Define Customers table with customer_id, contact details, business entity type reference. Define Quotes table with quote_id, customer_id (foreign key), status, expiration date, and pricing details. Define Quote Versions table to track changes over time. Implement foreign keys, constraints, and indexes. Prepare migration scripts.",
+            "status": "pending",
+            "testStrategy": "Insert sample customers and quotes, verify foreign key constraints and data integrity.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Design and Implement Audit Logs Schema with Relationships and Constraints",
+            "description": "Create Audit Logs table to track changes across entities with appropriate columns, relationships, and constraints.",
+            "dependencies": [],
+            "details": "Define Audit Logs table with audit_id, entity_type, entity_id, action_type, timestamp, user_id, and change details. Implement constraints and indexes for efficient querying. Prepare migration scripts for deployment.",
+            "status": "pending",
+            "testStrategy": "Insert sample audit log entries, verify data integrity and query performance.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 7,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Divide schema design into subtasks for each major entity: Services, Pricing Factors and Options, Business Entity Types, Quotes and Customers, and Audit Logs with relationships and constraints.",
+        "updatedAt": "2025-11-29T09:44:39.248Z"
+      },
+      {
+        "id": "3",
+        "title": "Develop Pricing Calculation Engine Logic",
+        "description": "Implement the core pricing calculation engine following the hybrid pricing model: base price, fixed impacts, percentage impacts, multiplier impacts, and fixed-price add-ons.",
+        "details": "Implement calculation steps: start with base_price, add all fixed impacts, add percentage impacts based on base_price, apply multiplier impacts to running total, then add fixed-price add-ons. Ensure factor dependencies and price_impact_type are handled correctly. Prepare calculation logic for both client-side MVP and future Supabase Edge Functions.",
+        "testStrategy": "Create unit tests covering various combinations of pricing factors and add-ons. Validate calculation accuracy against manual computations. Test prevention of circular dependencies in factor dependencies.",
+        "priority": "high",
+        "dependencies": [
+          "2"
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Base Price Calculation",
+            "description": "Develop the logic to retrieve and set the base price as the starting point for the pricing calculation engine.",
+            "dependencies": [],
+            "details": "Create a function or module that fetches the base price from the relevant data source and initializes the calculation total with this value. Ensure this step is the foundation for subsequent impact calculations.",
+            "status": "pending",
+            "testStrategy": "Unit test with various base price inputs to verify correct initialization.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Implement Fixed Impacts Calculation",
+            "description": "Add all fixed impact values to the base price as part of the pricing calculation sequence.",
+            "dependencies": [
+              1
+            ],
+            "details": "Develop logic to sum all fixed impact factors and add them to the running total after the base price is set. Handle factor dependencies and ensure no circular references occur.",
+            "status": "pending",
+            "testStrategy": "Unit tests covering multiple fixed impacts and dependency scenarios, including circular dependency prevention.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Implement Percentage Impacts Calculation",
+            "description": "Calculate and add percentage-based impacts relative to the base price to the running total.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Implement logic to compute each percentage impact as a fraction of the base price and add the sum to the current total. Ensure correct handling of factor dependencies and impact types.",
+            "status": "pending",
+            "testStrategy": "Unit tests verifying percentage calculations against known base prices and impact values.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Implement Multiplier Impacts Application",
+            "description": "Apply multiplier impacts to the running total after fixed and percentage impacts have been added.",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Create logic to multiply the current total by each multiplier impact factor sequentially. Confirm that dependencies and impact types are respected and that the calculation order is maintained.",
+            "status": "pending",
+            "testStrategy": "Unit tests validating multiplier effects on various totals and combinations of multipliers.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Integrate Fixed-Price Add-Ons and Handle Factor Dependencies",
+            "description": "Add fixed-price add-ons to the final total and ensure all factor dependencies and price impact types are correctly managed for both client-side MVP and future Supabase Edge Functions.",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "Develop integration for fixed-price add-ons to be added after multipliers. Implement comprehensive dependency checks to prevent circular references and ensure compatibility with client-side and server-side execution environments.",
+            "status": "pending",
+            "testStrategy": "Integration tests covering full calculation flow with add-ons, dependency validation, and environment compatibility checks.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 8,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Expand into subtasks for implementing base price calculation, fixed impacts, percentage impacts, multiplier impacts, and add-ons integration with dependency handling.",
+        "updatedAt": "2025-11-29T09:49:58.043Z"
+      },
+      {
+        "id": "4",
+        "title": "Implement Calculator Interface with Dynamic Form Rendering",
+        "description": "Build the React-based calculator UI allowing users to select services, dynamically render pricing factor forms, handle factor dependencies, and display real-time price calculations with itemized breakdown.",
+        "details": "Create service selection dropdown/card grid (FR-1). Load pricing factors dynamically per selected service (FR-2). Implement logic to show/hide dependent factors and reset values when dependencies change (FR-3). Calculate and update price in real-time as user selects options (FR-4). Display detailed price breakdown (FR-7). Use Shadcn UI components for consistent styling.",
+        "testStrategy": "Perform UI tests to verify dynamic form rendering and dependency handling. Validate real-time price updates with different factor selections. Confirm required fields validation before quote generation (FR-6).",
+        "priority": "high",
+        "dependencies": [
+          "1",
+          "3"
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Service Selection UI",
+            "description": "Create the user interface component for selecting services using dropdowns or card grids with Shadcn UI components.",
+            "dependencies": [],
+            "details": "Develop a React component that displays available services in a dropdown or card grid format, styled consistently with Shadcn UI. Ensure it supports user selection and triggers updates for pricing factors loading.",
+            "status": "pending",
+            "testStrategy": "Verify UI renders correctly with all services. Test user can select and change services, triggering appropriate events.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Load Pricing Factors Dynamically Based on Selected Service",
+            "description": "Implement logic to fetch and render pricing factor forms dynamically when a service is selected.",
+            "dependencies": [
+              1
+            ],
+            "details": "Upon service selection, fetch the corresponding pricing factors data and render the associated form inputs dynamically. Ensure the form updates correctly when the selected service changes.",
+            "status": "pending",
+            "testStrategy": "Test that selecting different services loads correct pricing factors. Confirm form updates and clears previous factors appropriately.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Implement Dependency-Based Form Rendering and Reset Logic",
+            "description": "Develop logic to show or hide pricing factors based on dependencies and reset factor values when dependencies change.",
+            "dependencies": [
+              2
+            ],
+            "details": "Create a system to evaluate factor dependencies, conditionally rendering form fields. When a dependency changes, reset dependent factor values to maintain data integrity.",
+            "status": "pending",
+            "testStrategy": "Validate that dependent factors appear/disappear correctly based on selections. Confirm values reset when dependencies change.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Implement Real-Time Price Calculation",
+            "description": "Calculate and update the total price in real-time as users select or modify pricing factors.",
+            "dependencies": [
+              3
+            ],
+            "details": "Integrate pricing calculation logic that listens to form changes and updates the displayed price immediately, reflecting all selected factors and their impacts.",
+            "status": "pending",
+            "testStrategy": "Test price updates instantly with each factor change. Verify calculation accuracy against expected results.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Display Detailed Price Breakdown",
+            "description": "Show an itemized breakdown of the price components based on selected services and pricing factors.",
+            "dependencies": [
+              4
+            ],
+            "details": "Design and implement a UI component that lists each pricing factor's contribution to the total price, updating dynamically as selections change.",
+            "status": "pending",
+            "testStrategy": "Ensure breakdown updates correctly with factor changes. Confirm all price components are accurately represented.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 6,
+            "title": "Implement Validation Logic for Pricing Factors",
+            "description": "Add validation to ensure required pricing factors are selected and inputs are valid before price calculation and quote generation.",
+            "dependencies": [
+              3
+            ],
+            "details": "Develop validation rules for pricing factor inputs, enforcing required fields and valid data formats. Integrate validation feedback into the UI to guide users.",
+            "status": "pending",
+            "testStrategy": "Test validation triggers on invalid or missing inputs. Confirm users cannot proceed without completing required fields.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 8,
+        "recommendedSubtasks": 6,
+        "expansionPrompt": "Create subtasks for service selection UI, dynamic loading of pricing factors, dependency-based form rendering, real-time price calculation, price breakdown display, and validation logic.",
+        "updatedAt": "2025-11-29T09:56:25.395Z"
+      },
+      {
+        "id": "5",
+        "title": "Add Add-on Selection Feature to Calculator",
+        "description": "Enable users to select from global and service-specific add-ons with fixed prices, integrating these selections into the pricing calculation.",
+        "details": "Fetch and display available add-ons (FR-5). Allow multi-selection with clear UI. Integrate add-on fixed prices into the pricing engine calculation. Ensure add-ons availability can be configured per service line in admin panel.",
+        "testStrategy": "Test add-on selection UI and verify add-on prices are correctly added to total price. Confirm add-ons respect service-specific availability.",
+        "priority": "medium",
+        "dependencies": [
+          "4",
+          "3"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "complexity": 6,
+        "recommendedSubtasks": 3,
+        "expansionPrompt": "Split into subtasks for fetching and displaying add-ons, multi-selection UI implementation, and integration of add-on prices into the calculation engine.",
+        "updatedAt": "2025-11-29T11:09:54.186Z"
+      },
+      {
+        "id": "6",
+        "title": "Implement Quote Generation and Customer Information Capture",
+        "description": "Develop functionality to capture customer details, generate unique quote numbers, set configurable expiration dates, and save quotes with initial status as Draft.",
+        "details": "Create forms to capture customer info (Company, Contact, Email, etc.) (FR-8). Implement unique quote number generation and default expiration date logic (FR-9). Save quote data including selected services, factors, add-ons, and pricing breakdown to backend. Set initial quote status to Draft.",
+        "testStrategy": "Validate form input and required fields. Confirm unique quote numbers are generated. Verify expiration date defaults and status assignment. Test quote persistence in backend.",
+        "priority": "high",
+        "dependencies": [
+          "4",
+          "5",
+          "2"
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Customer Information Capture Form",
+            "description": "Design and implement a user-friendly form to capture essential customer details such as Company, Contact Name, Email, and other relevant fields.",
+            "dependencies": [],
+            "details": "Develop a single-column form with logically grouped fields, starting with easiest inputs like name and email, clearly marking required fields, and providing inline validation and error messages. Use native input types for better UX, e.g., email and date pickers. Ensure accessibility and mobile responsiveness.",
+            "status": "pending",
+            "testStrategy": "Validate form field presence, required field enforcement, inline validation, and usability on desktop and mobile devices.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Implement Unique Quote Number Generation",
+            "description": "Develop backend logic to generate unique quote numbers for each new quote to ensure traceability and avoid duplication.",
+            "dependencies": [],
+            "details": "Create a system that generates sequential or otherwise unique identifiers for quotes, ensuring thread-safe and collision-free generation. Integrate this logic with quote creation workflows so each saved quote receives a unique number.",
+            "status": "pending",
+            "testStrategy": "Test uniqueness of generated quote numbers under concurrent quote creation scenarios and verify correct assignment to saved quotes.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Develop Configurable Expiration Date Logic",
+            "description": "Implement logic to set default expiration dates for quotes based on configurable parameters, allowing flexibility in quote validity periods.",
+            "dependencies": [],
+            "details": "Create a mechanism to calculate expiration dates automatically when a quote is generated, using configurable settings (e.g., number of days from creation). Allow for overrides if needed. Integrate this with quote data before saving.",
+            "status": "pending",
+            "testStrategy": "Verify default expiration dates are correctly calculated and applied according to configuration, including edge cases and overrides.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Save Quote Data with Initial Draft Status",
+            "description": "Implement functionality to persist complete quote data—including customer info, selected services, pricing factors, add-ons, and pricing breakdown—to the backend with the initial status set to Draft.",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Develop backend APIs and database schema to store all relevant quote information. Ensure the initial status field is set to 'Draft' upon creation. Integrate with front-end form submission and quote number and expiration logic.",
+            "status": "pending",
+            "testStrategy": "Test saving of complete quote data, verify initial status is 'Draft', confirm data integrity and retrieval from backend.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 7,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Divide into subtasks for customer info form creation, unique quote number generation, expiration date logic, and saving quote data with initial status."
+      },
+      {
+        "id": "7",
+        "title": "Develop Quote Management Interfaces",
+        "description": "Build list and detail views for quotes with filtering, sorting, search, status tracking, versioning, and editing capabilities.",
+        "details": "Implement Quote List View with filters and search (FR-12). Create Quote Detail View showing line items, status history, and notes (FR-13). Enable status updates and automatic expiration handling (FR-14). Allow editing of draft quotes and version creation for sent quotes (FR-15).",
+        "testStrategy": "Test UI for listing, filtering, and searching quotes. Verify status transitions and expiration logic. Confirm editing and versioning workflows function correctly.",
+        "priority": "high",
+        "dependencies": [
+          "6",
+          "2"
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Quote List View with Filtering and Search",
+            "description": "Develop the user interface to display a list of quotes with capabilities for filtering by various criteria and searching by keywords.",
+            "dependencies": [],
+            "details": "Create a responsive Quote List View component that supports filtering options such as date range, status, and customer, as well as a search bar to find quotes by text input. Ensure integration with backend APIs to fetch filtered and searched data dynamically.",
+            "status": "pending",
+            "testStrategy": "Test UI responsiveness, verify filtering and search return correct results, and validate integration with backend data sources.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Create Quote Detail View with Line Items, Status History, and Notes",
+            "description": "Build the detailed view for individual quotes showing all line items, the history of status changes, and any associated notes.",
+            "dependencies": [
+              1
+            ],
+            "details": "Design and implement the Quote Detail View component that displays comprehensive information about a selected quote, including line items breakdown, chronological status updates, and user notes. Ensure data consistency and smooth navigation from the list view.",
+            "status": "pending",
+            "testStrategy": "Verify correct display of all quote details, test navigation from list to detail view, and validate data accuracy for line items, status history, and notes.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Enable Status Updates and Automatic Expiration Handling",
+            "description": "Implement functionality to update quote statuses manually and automatically expire quotes based on predefined rules.",
+            "dependencies": [
+              2
+            ],
+            "details": "Develop backend and frontend logic to allow users to change quote statuses (e.g., Draft, Sent, Approved) and implement automatic expiration of quotes after their expiration date passes. Include notifications or UI indicators for expired quotes.",
+            "status": "pending",
+            "testStrategy": "Test manual status updates for correctness, verify automatic expiration triggers at the right time, and confirm UI reflects current status accurately.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Allow Editing of Draft Quotes",
+            "description": "Provide editing capabilities for quotes that are in Draft status, enabling users to modify quote details before sending.",
+            "dependencies": [
+              3
+            ],
+            "details": "Implement editing interfaces and validation for draft quotes, allowing changes to line items, customer info, and pricing factors. Ensure that edits are saved correctly and do not affect sent or finalized quotes.",
+            "status": "pending",
+            "testStrategy": "Test editing workflows on draft quotes, validate data persistence, and ensure editing is disabled for non-draft statuses.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Implement Version Creation for Sent Quotes",
+            "description": "Enable creation of new versions of quotes once they have been sent, preserving previous versions and allowing updates.",
+            "dependencies": [
+              4
+            ],
+            "details": "Develop versioning logic to create a new quote version when edits are needed on sent quotes. Maintain history of versions with timestamps and status. Provide UI to view and manage different versions of a quote.",
+            "status": "pending",
+            "testStrategy": "Verify version creation triggers correctly, test version history display, and ensure previous versions remain immutable.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 7,
+        "recommendedSubtasks": 5,
+        "expansionPrompt": "Break down into subtasks for quote list view with filtering/search, quote detail view, status updates and expiration handling, editing draft quotes, and versioning sent quotes."
+      },
+      {
+        "id": "8",
+        "title": "Implement PDF Export and Quote Preview Features",
+        "description": "Provide professional quote preview with company branding and enable exporting quotes to PDF format.",
+        "details": "Design quote preview UI (FR-10) reflecting branding and detailed pricing breakdown. Integrate PDF generation library to export quotes maintaining formatting and layout (FR-11). Ensure export works for multi-service quotes and includes all relevant data.",
+        "testStrategy": "Verify preview displays accurate and complete quote information. Test PDF export for correctness, formatting, and completeness. Confirm multi-service quotes export properly.",
+        "priority": "medium",
+        "dependencies": [
+          "7"
+        ],
+        "status": "pending",
+        "subtasks": [],
+        "complexity": 6,
+        "recommendedSubtasks": 3,
+        "expansionPrompt": "Create subtasks for designing quote preview UI, integrating PDF generation library, and ensuring multi-service quote export correctness."
+      },
+      {
+        "id": "9",
+        "title": "Build Admin Panel for Service and Pricing Configuration",
+        "description": "Create admin interfaces for full CRUD operations on services, pricing factors, factor options, business entity types, and add-ons with pricing modifiers.",
+        "details": "Implement service catalog management (FR-16). Enable adding/configuring pricing factors per service (FR-17) and managing factor options including price impact (FR-18). Provide CRUD for business entity types and modifiers (FR-20). Manage global and service-specific add-ons (FR-21). Use React with Shadcn UI for consistent admin UX.",
+        "testStrategy": "Test all CRUD operations for correctness and data validation. Verify pricing modifiers and factor options are saved and reflected in calculator. Confirm add-on availability configuration per service.",
+        "priority": "high",
+        "dependencies": [
+          "1",
+          "2"
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Service Catalog CRUD Interface",
+            "description": "Develop full Create, Read, Update, Delete (CRUD) functionality for managing the service catalog as per FR-16.",
+            "dependencies": [],
+            "details": "Create React components using Shadcn UI to list services, add new services, edit existing services, and delete services. Integrate with backend API endpoints to persist changes. Ensure validation and error handling for service data.",
+            "status": "pending",
+            "testStrategy": "Test all CRUD operations for services including form validation, successful data persistence, and UI updates.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Develop Pricing Factors Management UI",
+            "description": "Enable adding and configuring pricing factors for each service according to FR-17 requirements.",
+            "dependencies": [
+              1
+            ],
+            "details": "Build React components to display pricing factors linked to services, allow creation, editing, and deletion of pricing factors. Use Shadcn UI components for consistent styling. Connect to backend APIs to save pricing factor data.",
+            "status": "pending",
+            "testStrategy": "Verify CRUD operations on pricing factors work correctly and pricing factors are correctly associated with services.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Create Factor Options Configuration Interface",
+            "description": "Implement management of factor options including their price impact as specified in FR-18.",
+            "dependencies": [
+              2
+            ],
+            "details": "Design UI components to add, edit, and delete factor options under each pricing factor. Include fields for price impact types and values. Ensure data validation and backend integration for persistence.",
+            "status": "pending",
+            "testStrategy": "Test creation, update, and deletion of factor options and confirm price impact data is saved and reflected properly.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Build Business Entity Types CRUD Functionality",
+            "description": "Provide full CRUD operations for business entity types and their pricing modifiers as per FR-20.",
+            "dependencies": [],
+            "details": "Develop React components with Shadcn UI to list, create, update, and delete business entity types and associated pricing modifiers. Integrate with backend services to persist changes.",
+            "status": "pending",
+            "testStrategy": "Validate all CRUD operations for business entity types and modifiers, including data integrity and UI consistency.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Implement Add-Ons Management Interface",
+            "description": "Manage global and service-specific add-ons with pricing modifiers according to FR-21.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create UI components to list add-ons, assign them globally or to specific services, and configure pricing modifiers. Use Shadcn UI for consistent look and feel. Connect to backend APIs for data operations.",
+            "status": "pending",
+            "testStrategy": "Test add-on creation, assignment, modification, and deletion. Confirm pricing modifiers are correctly applied and saved.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 6,
+            "title": "Ensure UI Consistency Using Shadcn UI Components",
+            "description": "Standardize the admin panel UI by integrating Shadcn UI components across all CRUD interfaces for a consistent user experience.",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "details": "Review all admin panel components and replace or style them using Shadcn UI components. Ensure uniform design patterns, responsive layouts, and accessibility compliance.",
+            "status": "pending",
+            "testStrategy": "Perform UI/UX testing to verify consistent styling, responsiveness, and usability across all admin panel pages.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 8,
+        "recommendedSubtasks": 6,
+        "expansionPrompt": "Expand into subtasks for service catalog CRUD, pricing factors management, factor options configuration, business entity types CRUD, add-ons management, and UI consistency with Shadcn components."
+      },
+      {
+        "id": "10",
+        "title": "Implement Factor Dependency Rules and Validation in Admin Panel",
+        "description": "Enable defining, testing, and validating dependency rules between pricing factors to prevent circular dependencies and ensure correct conditional logic.",
+        "details": "Provide UI to define dependency conditions between factors (FR-19). Implement logic to test dependency rules and detect circular dependencies. Integrate 'Test Calculator' mode to validate pricing logic and dependencies (FR-22).",
+        "testStrategy": "Create test cases for various dependency scenarios. Confirm circular dependencies are detected and prevented. Validate 'Test Calculator' mode outputs expected pricing results.",
+        "priority": "medium",
+        "dependencies": [
+          "9",
+          "3"
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Develop UI for Defining Dependency Rules Between Pricing Factors",
+            "description": "Create an intuitive user interface in the admin panel that allows users to define and manage dependency conditions between pricing factors as specified in FR-19.",
+            "dependencies": [],
+            "details": "Design and implement UI components to select pricing factors and specify dependency conditions, ensuring usability and validation of input. Use consistent styling and integrate with backend APIs to save and retrieve dependency rules.",
+            "status": "pending",
+            "testStrategy": "Perform UI tests to verify correct rendering and input validation. Test saving and loading of dependency rules through the UI.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Implement Logic to Detect Circular Dependencies in Factor Rules",
+            "description": "Develop backend logic to analyze defined dependency rules and detect any circular dependencies to prevent invalid configurations.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement algorithms to traverse dependency graphs of pricing factors and identify cycles. Integrate this logic with rule saving and testing workflows to block circular dependencies and provide meaningful error messages.",
+            "status": "pending",
+            "testStrategy": "Create unit tests with various dependency scenarios including circular and non-circular cases. Verify detection accuracy and error handling.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Integrate 'Test Calculator' Mode for Validating Pricing Logic and Dependencies",
+            "description": "Incorporate the 'Test Calculator' mode (FR-22) into the admin panel to allow users to validate pricing calculations and dependency rules interactively.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Extend the admin panel to include a test mode where users can input test data and see pricing outputs based on current dependency rules. Ensure real-time feedback and error reporting for invalid dependencies.",
+            "status": "pending",
+            "testStrategy": "Conduct integration tests to confirm that test calculator mode reflects correct pricing outputs and respects dependency rules. Validate user interactions and error messages.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Implement Validation Workflows for Dependency Rules and Pricing Logic",
+            "description": "Create workflows to validate dependency rules and pricing logic systematically, ensuring correctness before deployment.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Develop processes that run validation checks on dependency rules and pricing logic, including circular dependency detection and test calculator validations. Provide reports or alerts for issues found.",
+            "status": "pending",
+            "testStrategy": "Test validation workflows with multiple scenarios to ensure all errors are caught and reported. Verify that workflows integrate smoothly with UI and backend logic.",
+            "parentId": "undefined"
+          }
+        ],
+        "complexity": 7,
+        "recommendedSubtasks": 4,
+        "expansionPrompt": "Divide into subtasks for UI to define dependency rules, logic to detect circular dependencies, integration of test calculator mode, and validation workflows."
+      },
+      {
+        "id": "11",
+        "title": "Implement Audit Trail for Pricing and Quote Changes",
+        "description": "Log all final quote price changes including who made the change, what was changed, and when, to support audit and compliance requirements.",
+        "details": "Design audit log schema and integrate logging in quote save/update operations (FR-23). Capture user identity (future authentication), timestamp, and change details. Provide admin UI to view audit logs.",
+        "testStrategy": "Verify audit entries are created on quote price changes. Test retrieval and display of audit logs. Confirm data integrity and completeness.",
+        "priority": "low",
+        "dependencies": [
+          "6",
+          "9"
+        ],
+        "status": "pending",
+        "subtasks": [],
+        "complexity": 5,
+        "recommendedSubtasks": 3,
+        "expansionPrompt": "Split into subtasks for audit log schema design, integration of logging in quote operations, and admin UI for audit log viewing."
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "lastModified": "2025-11-29T11:09:54.187Z",
+      "taskCount": 11,
+      "completedCount": 5,
+      "tags": [
+        "master"
+      ]
+    }
+  }
+}

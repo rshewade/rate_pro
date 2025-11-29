@@ -1,0 +1,101 @@
+{
+	"meta": {
+		"generatedAt": "2025-11-29T09:21:42.756Z",
+		"tasksAnalyzed": 11,
+		"totalTasks": 11,
+		"analysisCount": 11,
+		"thresholdScore": 5,
+		"projectName": "Task Master",
+		"usedResearch": true
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "Setup Development Environment and Infrastructure",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down environment setup into subtasks for Vite and React setup, json-server configuration, Docker containerization, and ESLint/Prettier integration.",
+			"reasoning": "This task involves multiple distinct setup activities including frontend tooling, mock backend, containerization, and code quality tools. Each requires configuration and verification but follows well-documented patterns, making it moderately complex."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Design and Implement Database Schema in Supabase",
+			"complexityScore": 7,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Divide schema design into subtasks for each major entity: Services, Pricing Factors and Options, Business Entity Types, Quotes and Customers, and Audit Logs with relationships and constraints.",
+			"reasoning": "Designing a comprehensive relational schema with multiple entities, relationships, constraints, and migration scripts requires careful planning and validation to ensure data integrity and support complex queries."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Develop Pricing Calculation Engine Logic",
+			"complexityScore": 8,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Expand into subtasks for implementing base price calculation, fixed impacts, percentage impacts, multiplier impacts, and add-ons integration with dependency handling.",
+			"reasoning": "The pricing engine must correctly apply multiple impact types in sequence, handle factor dependencies, prevent circular references, and support both client-side and future server-side execution, increasing complexity significantly."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "Implement Calculator Interface with Dynamic Form Rendering",
+			"complexityScore": 8,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Create subtasks for service selection UI, dynamic loading of pricing factors, dependency-based form rendering, real-time price calculation, price breakdown display, and validation logic.",
+			"reasoning": "Dynamic UI rendering with dependency logic and real-time updates requires complex state management and user interaction handling, combined with integration of pricing logic and validation."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Add Add-on Selection Feature to Calculator",
+			"complexityScore": 6,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Split into subtasks for fetching and displaying add-ons, multi-selection UI implementation, and integration of add-on prices into the calculation engine.",
+			"reasoning": "While conceptually straightforward, integrating add-ons requires UI work and ensuring correct pricing logic integration, with some complexity due to service-specific availability constraints."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Implement Quote Generation and Customer Information Capture",
+			"complexityScore": 7,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Divide into subtasks for customer info form creation, unique quote number generation, expiration date logic, and saving quote data with initial status.",
+			"reasoning": "Capturing user input, generating unique identifiers, managing configurable expiration, and persisting complex quote data with dependencies on prior tasks adds moderate complexity."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Develop Quote Management Interfaces",
+			"complexityScore": 7,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down into subtasks for quote list view with filtering/search, quote detail view, status updates and expiration handling, editing draft quotes, and versioning sent quotes.",
+			"reasoning": "Building comprehensive management UI with multiple interactive features and state transitions requires careful design and testing but follows common patterns."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "Implement PDF Export and Quote Preview Features",
+			"complexityScore": 6,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Create subtasks for designing quote preview UI, integrating PDF generation library, and ensuring multi-service quote export correctness.",
+			"reasoning": "PDF export and preview involve UI design and third-party library integration, with moderate complexity to maintain formatting and data completeness."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "Build Admin Panel for Service and Pricing Configuration",
+			"complexityScore": 8,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Expand into subtasks for service catalog CRUD, pricing factors management, factor options configuration, business entity types CRUD, add-ons management, and UI consistency with Shadcn components.",
+			"reasoning": "Admin panel requires multiple full CRUD interfaces with complex data relationships and validation, demanding significant UI and backend integration effort."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "Implement Factor Dependency Rules and Validation in Admin Panel",
+			"complexityScore": 7,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Divide into subtasks for UI to define dependency rules, logic to detect circular dependencies, integration of test calculator mode, and validation workflows.",
+			"reasoning": "Implementing dependency rule management with circular dependency detection and validation testing adds complexity beyond standard CRUD due to logic and algorithmic requirements."
+		},
+		{
+			"taskId": 11,
+			"taskTitle": "Implement Audit Trail for Pricing and Quote Changes",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Split into subtasks for audit log schema design, integration of logging in quote operations, and admin UI for audit log viewing.",
+			"reasoning": "Audit trail implementation involves schema design and backend logging integration with a relatively straightforward admin UI, making it moderately complex but less so than core business logic tasks."
+		}
+	]
+}

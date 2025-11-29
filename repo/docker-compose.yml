@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  # Frontend application
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - api
+
+  # Mock API server (json-server)
+  api:
+    image: node:20-alpine
+    working_dir: /app
+    command: npx json-server --watch db.json --port 3001 --host 0.0.0.0
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./db.json:/app/db.json

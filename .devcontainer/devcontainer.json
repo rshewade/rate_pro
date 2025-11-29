@@ -1,0 +1,20 @@
+{
+  "name": "Rate_Pro",
+  "image": "ghcr.io/rshewade/dev_js:latest",
+  "workspaceFolder": "/workspace",
+  "forwardPorts": [
+    3000,
+    3001
+  ],
+  "mounts": [
+    "source=${localEnv:HOME}/projects/rate_pro,target=/workspace,type=bind,consistency=cached"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Anthropic.claude-code",
+        "Google.geminicodeassist"
+      ]
+    }
+  }
+}

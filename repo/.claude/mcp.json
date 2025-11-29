@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "taskmaster-ai": {
+      "command": "npx",
+      "args": ["-y", "task-master-ai@latest"],
+      "env": {
+        "MODEL": "claude-code/sonnet",
+        "TASK_MASTER_TOOLS": "core",
+        "DEFAULT_SUBTASKS": 5,
+        "DEFAULT_PRIORITY": "medium"
+      }
+    }
+  }
+}
+

@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  # Production frontend with nginx
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # Mock API server for production testing
+  # Replace with Supabase connection in real production
+  api:
+    image: node:20-alpine
+    working_dir: /app
+    command: npx json-server --watch db.json --port 3001 --host 0.0.0.0
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./db.json:/app/db.json
+    restart: unless-stopped
