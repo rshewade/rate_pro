@@ -7,7 +7,9 @@ import { EntityTypesTable } from './EntityTypesTable'
 import { PricingFactorsTable } from './PricingFactorsTable'
 import { FactorOptionsTable } from './FactorOptionsTable'
 import { AddonsTable } from './AddonsTable'
-import { RefreshCw, AlertCircle, Package, Building2, Sliders, ListTree, Puzzle } from 'lucide-react'
+import { FactorDependenciesTable } from './FactorDependenciesTable'
+import { TestCalculator } from './TestCalculator'
+import { RefreshCw, AlertCircle, Package, Building2, Sliders, Puzzle, Link2, Calculator } from 'lucide-react'
 import api from '@/services/api'
 
 export function AdminPanel() {
@@ -17,6 +19,7 @@ export function AdminPanel() {
     factorOptions: [],
     entityTypes: [],
     addons: [],
+    factorDependencies: [],
   })
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState(null)
@@ -27,14 +30,15 @@ export function AdminPanel() {
     setIsLoading(true)
     setError(null)
     try {
-      const [services, pricingFactors, factorOptions, entityTypes, addons] = await Promise.all([
+      const [services, pricingFactors, factorOptions, entityTypes, addons, factorDependencies] = await Promise.all([
         api.services.getAll(),
         api.pricingFactors.getAll(),
         api.factorOptions.getAll(),
         api.entityTypes.getAll(),
         api.addons.getAll(),
+        api.factorDependencies.getAll(),
       ])
-      setData({ services, pricingFactors, factorOptions, entityTypes, addons })
+      setData({ services, pricingFactors, factorOptions, entityTypes, addons, factorDependencies })
     } catch (err) {
       console.error('Failed to fetch admin data:', err)
       setError(err.message || 'Failed to load data')
@@ -124,7 +128,7 @@ export function AdminPanel() {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-6 mb-6">
               <TabsTrigger value="services" className="gap-2">
                 <Package className="h-4 w-4" />
                 Services
@@ -133,6 +137,10 @@ export function AdminPanel() {
                 <Sliders className="h-4 w-4" />
                 Factors
               </TabsTrigger>
+              <TabsTrigger value="dependencies" className="gap-2">
+                <Link2 className="h-4 w-4" />
+                Dependencies
+              </TabsTrigger>
               <TabsTrigger value="entities" className="gap-2">
                 <Building2 className="h-4 w-4" />
                 Entities
@@ -140,6 +148,10 @@ export function AdminPanel() {
               <TabsTrigger value="addons" className="gap-2">
                 <Puzzle className="h-4 w-4" />
                 Add-ons
+              </TabsTrigger>
+              <TabsTrigger value="test" className="gap-2">
+                <Calculator className="h-4 w-4" />
+                Test
               </TabsTrigger>
             </TabsList>
 
@@ -157,12 +169,33 @@ export function AdminPanel() {
               />
             </TabsContent>
 
+            <TabsContent value="dependencies">
+              <FactorDependenciesTable
+                dependencies={data.factorDependencies}
+                pricingFactors={data.pricingFactors}
+                factorOptions={data.factorOptions}
+                services={data.services}
+                onRefresh={fetchData}
+              />
+            </TabsContent>
+
             <TabsContent value="entities">
               <EntityTypesTable entityTypes={data.entityTypes} onRefresh={fetchData} />
             </TabsContent>
 
             <TabsContent value="addons">
               <AddonsTable addons={data.addons} services={data.services} onRefresh={fetchData} />
+            </TabsContent>
+
+            <TabsContent value="test">
+              <TestCalculator
+                services={data.services}
+                pricingFactors={data.pricingFactors}
+                factorOptions={data.factorOptions}
+                entityTypes={data.entityTypes}
+                addons={data.addons}
+                dependencies={data.factorDependencies}
+              />
             </TabsContent>
           </Tabs>
         </CardContent>

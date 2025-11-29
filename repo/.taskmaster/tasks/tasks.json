@@ -546,7 +546,7 @@
           "9",
           "3"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -599,7 +599,8 @@
         ],
         "complexity": 7,
         "recommendedSubtasks": 4,
-        "expansionPrompt": "Divide into subtasks for UI to define dependency rules, logic to detect circular dependencies, integration of test calculator mode, and validation workflows."
+        "expansionPrompt": "Divide into subtasks for UI to define dependency rules, logic to detect circular dependencies, integration of test calculator mode, and validation workflows.",
+        "updatedAt": "2025-11-29T13:05:22.997Z"
       },
       {
         "id": "11",
@@ -621,9 +622,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-11-29T12:51:54.410Z",
+      "lastModified": "2025-11-29T13:05:22.998Z",
       "taskCount": 11,
-      "completedCount": 9,
+      "completedCount": 10,
       "tags": [
         "master"
       ]

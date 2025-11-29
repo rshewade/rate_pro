@@ -100,6 +100,16 @@ export const quoteLineItemsApi = {
   delete: (id) => fetchApi(`/quote_line_items/${id}`, { method: 'DELETE' }),
 }
 
+// Factor Dependencies API
+export const factorDependenciesApi = {
+  getAll: () => fetchApi('/factor_dependencies'),
+  getByFactorId: (factorId) => fetchApi(`/factor_dependencies?factor_id=${factorId}`),
+  create: (data) => fetchApi('/factor_dependencies', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) =>
+    fetchApi(`/factor_dependencies/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id) => fetchApi(`/factor_dependencies/${id}`, { method: 'DELETE' }),
+}
+
 export default {
   services: servicesApi,
   pricingFactors: pricingFactorsApi,
@@ -109,4 +119,5 @@ export default {
   quotes: quotesApi,
   customers: customersApi,
   quoteLineItems: quoteLineItemsApi,
+  factorDependencies: factorDependenciesApi,
 }
