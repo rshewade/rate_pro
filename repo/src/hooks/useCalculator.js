@@ -30,12 +30,14 @@ export function useCalculator({
   }, [services, selectedServiceId])
 
   const serviceFactors = useMemo(() => {
-    return pricingFactors.filter((f) => f.service_id === selectedServiceId)
+    // Use == for comparison to handle string/number type differences from json-server
+    return pricingFactors.filter((f) => f.service_id == selectedServiceId)
   }, [pricingFactors, selectedServiceId])
 
   const serviceFactorOptions = useMemo(() => {
-    const factorIds = serviceFactors.map((f) => f.id)
-    return factorOptions.filter((o) => factorIds.includes(o.factor_id))
+    const factorIds = serviceFactors.map((f) => String(f.id))
+    // Use String comparison to handle type differences from json-server
+    return factorOptions.filter((o) => factorIds.includes(String(o.factor_id)))
   }, [factorOptions, serviceFactors])
 
   const selectedEntityType = useMemo(() => {
