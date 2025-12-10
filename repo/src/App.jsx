@@ -2,7 +2,8 @@ import * as React from 'react'
 import { Calculator } from '@/components/calculator'
 import { AdminPanel } from '@/components/admin'
 import { QuotesManager } from '@/components/quote'
-import { Calculator as CalcIcon, Settings, Trash2, FileText } from 'lucide-react'
+import { Documentation } from '@/components/docs'
+import { Calculator as CalcIcon, Settings, Trash2, FileText, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
 function App() {
@@ -56,6 +57,14 @@ function App() {
                 <Settings className="w-4 h-4" />
                 Admin
               </Button>
+              <Button
+                variant={view === 'docs' ? 'default' : 'outline'}
+                className="gap-2"
+                onClick={() => setView('docs')}
+              >
+                <BookOpen className="w-4 h-4" />
+                Docs
+              </Button>
             </nav>
           </div>
         </div>
@@ -66,6 +75,7 @@ function App() {
         {view === 'calculator' && <Calculator />}
         {view === 'quotes' && <QuotesManager />}
         {view === 'admin' && <AdminPanel />}
+        {view === 'docs' && <Documentation />}
       </main>
 
       {/* Footer */}

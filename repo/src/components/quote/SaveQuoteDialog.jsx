@@ -9,7 +9,7 @@ import { CustomerForm } from './CustomerForm'
 import { validateCustomer, createQuoteFromCalculation, formatExpirationDate } from '@/lib/quote'
 import { logQuoteCreated } from '@/lib/audit'
 import { Save, FileText, CheckCircle } from 'lucide-react'
-import api from '@/services/api'
+import api from '@/services'
 
 /**
  * SaveQuoteDialog - Dialog for saving a quote with customer information

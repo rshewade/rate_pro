@@ -3,7 +3,7 @@
  * Handles logging of changes to quotes, pricing, and other entities
  */
 
-import api from '@/services/api'
+import api from '@/services'
 
 /**
  * Action types for audit logging

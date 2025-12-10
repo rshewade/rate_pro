@@ -25,7 +25,7 @@ import {
   AlertCircle,
   Eye,
 } from 'lucide-react'
-import api from '@/services/api'
+import api from '@/services'
 import { QuotePreview } from './QuotePreview'
 
 const STATUS_OPTIONS = [
@@ -403,11 +403,11 @@ export function QuoteDetail({ quote, onBack, onQuoteUpdated }) {
                   )}
 
                   {/* Selected Add-ons */}
-                  {item.selected_addons && item.selected_addons.length > 0 && (
+                  {item.selected_addon_ids && item.selected_addon_ids.length > 0 && (
                     <div className="mt-3">
                       <p className="text-sm font-medium text-muted-foreground mb-2">Add-ons</p>
                       <div className="flex flex-wrap gap-2">
-                        {item.selected_addons.map((addonId, i) => (
+                        {item.selected_addon_ids.map((addonId, i) => (
                           <Badge key={i} variant="secondary">
                             {getAddonName(addonId)}
                           </Badge>

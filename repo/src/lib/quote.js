@@ -145,7 +145,7 @@ export function createQuoteFromCalculation({
       factor_id: sf.factor_id,
       option_id: sf.option_id,
     })),
-    selected_addons: selectedAddons.map((a) => a.id),
+    selected_addon_ids: selectedAddons.map((a) => a.id),
   }
 
   // Customer data for creation

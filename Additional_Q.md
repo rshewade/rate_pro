@@ -20,3 +20,4 @@ CLAUDE.md says: React 19 + Vite (no TypeScript mentioned), and Phase 1 uses json
   npm run lint       # ESLint check
   npm run lint:fix   # Auto-fix lint issues
   npm run format     # Prettier format
+  

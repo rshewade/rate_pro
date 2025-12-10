@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table'
 import { formatExpirationDate, isQuoteExpired } from '@/lib/quote'
 import { Search, Filter, Eye, RefreshCw, AlertCircle } from 'lucide-react'
-import api from '@/services/api'
+import api from '@/services'
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Statuses' },

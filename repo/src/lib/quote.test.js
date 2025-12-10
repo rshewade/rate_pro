@@ -203,7 +203,7 @@ describe('Quote Utilities', () => {
       expect(result.lineItem.base_price).toBe(500)
       expect(result.lineItem.calculated_price).toBe(750)
       expect(result.lineItem.selected_factors).toHaveLength(1)
-      expect(result.lineItem.selected_addons).toEqual([1])
+      expect(result.lineItem.selected_addon_ids).toEqual([1])
 
       expect(result.customer.company_name).toBe('Test Corp')
       expect(result.customer.email).toBe('john@test.com')

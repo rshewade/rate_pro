@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Pencil, Trash2, Plus, AlertTriangle, CheckCircle, ArrowRight, Link2 } from 'lucide-react'
-import api from '@/services/api'
+import api from '@/services'
 import {
   validateDependencyRule,
   findAllCircularDependencies,

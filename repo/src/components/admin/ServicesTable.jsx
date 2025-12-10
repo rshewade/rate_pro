@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog'
 import { Badge } from '@/components/ui/Badge'
 import { Pencil, Trash2, Plus } from 'lucide-react'
-import api from '@/services/api'
+import api from '@/services'
 
 export function ServicesTable({ services, onRefresh }) {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)

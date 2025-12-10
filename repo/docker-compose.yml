@@ -3,11 +3,12 @@ version: '3.8'
 services:
   # Frontend application
   frontend:
+    container_name: rate_pro
     build:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      - "3000:3000"
+      - "7010:3000"
     volumes:
       - .:/app
       - /app/node_modules
@@ -22,13 +23,14 @@ services:
 
   # Mock API server (json-server)
   api:
+    container_name: rate_pro_api
     image: node:20-alpine
-    working_dir: /app
+    working_dir: /data
     command: npx json-server --watch db.json --port 3001 --host 0.0.0.0
     ports:
       - "3001:3001"
     volumes:
-      - ./db.json:/app/db.json
+      - .:/data
     networks:
       - ratepro-network
 

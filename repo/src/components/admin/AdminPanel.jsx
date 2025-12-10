@@ -11,7 +11,7 @@ import { FactorDependenciesTable } from './FactorDependenciesTable'
 import { TestCalculator } from './TestCalculator'
 import { AuditLogTable } from './AuditLogTable'
 import { RefreshCw, AlertCircle, Package, Building2, Sliders, Puzzle, Link2, Calculator, History } from 'lucide-react'
-import api from '@/services/api'
+import api from '@/services'
 
 export function AdminPanel() {
   const [data, setData] = React.useState({

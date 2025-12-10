@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { Pencil, Trash2, Plus, ChevronRight } from 'lucide-react'
-import api from '@/services/api'
+import api from '@/services'
 
 export function PricingFactorsTable({ pricingFactors, factorOptions, services, onRefresh, onSelectFactor }) {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
@@ -49,11 +49,11 @@ export function PricingFactorsTable({ pricingFactors, factorOptions, services, o
   }
 
   const handleDelete = async (factor) => {
-    const optionCount = factorOptions.filter((o) => o.factor_id === factor.id).length
+    const optionCount = factorOptions.filter((o) => o.factor_id == factor.id).length
     if (optionCount > 0) {
       if (!confirm(`This factor has ${optionCount} options. Deleting it will also delete all options. Continue?`)) return
       // Delete all options first
-      const options = factorOptions.filter((o) => o.factor_id === factor.id)
+      const options = factorOptions.filter((o) => o.factor_id == factor.id)
       for (const option of options) {
         await api.factorOptions.delete(option.id)
       }
@@ -92,19 +92,19 @@ export function PricingFactorsTable({ pricingFactors, factorOptions, services, o
   }
 
   const getServiceName = (serviceId) => {
-    const service = services.find((s) => s.id === serviceId)
+    const service = services.find((s) => s.id == serviceId)
     return service?.name || 'Unknown'
   }
 
   const getOptionCount = (factorId) => {
-    return factorOptions.filter((o) => o.factor_id === factorId).length
+    return factorOptions.filter((o) => o.factor_id == factorId).length
   }
 
   // Group factors by service
   const factorsByService = React.useMemo(() => {
     const grouped = {}
     services.forEach((service) => {
-      grouped[service.id] = pricingFactors.filter((f) => f.service_id === service.id)
+      grouped[service.id] = pricingFactors.filter((f) => f.service_id == service.id)
     })
     return grouped
   }, [pricingFactors, services])
@@ -236,7 +236,7 @@ export function PricingFactorsTable({ pricingFactors, factorOptions, services, o
                   <SelectContent>
                     <SelectItem value="select">Select</SelectItem>
                     <SelectItem value="number">Number</SelectItem>
-                    <SelectItem value="toggle">Toggle</SelectItem>
+                    <SelectItem value="boolean">Toggle</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

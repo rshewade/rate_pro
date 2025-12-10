@@ -213,9 +213,9 @@ export function QuotePreview({
                     </div>
                   )}
                   {/* Addon details */}
-                  {item.selected_addons?.length > 0 && (
+                  {item.selected_addon_ids?.length > 0 && (
                     <div className="px-3 pb-2 text-xs text-muted-foreground">
-                      Add-ons: {item.selected_addons.map(id => getAddonName(id)).join(', ')}
+                      Add-ons: {item.selected_addon_ids.map(id => getAddonName(id)).join(', ')}
                     </div>
                   )}
                 </div>

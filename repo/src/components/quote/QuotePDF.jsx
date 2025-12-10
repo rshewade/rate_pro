@@ -295,9 +295,9 @@ export function QuotePDF({
                   </View>
                 )}
                 {/* Addon Details */}
-                {item.selected_addons?.length > 0 && (
+                {item.selected_addon_ids?.length > 0 && (
                   <View style={styles.lineItemDetails}>
-                    <Text>Add-ons: {item.selected_addons.map(id => getAddonName(id)).join(', ')}</Text>
+                    <Text>Add-ons: {item.selected_addon_ids.map(id => getAddonName(id)).join(', ')}</Text>
                   </View>
                 )}
               </View>

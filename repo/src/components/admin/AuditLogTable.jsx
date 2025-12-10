@@ -22,7 +22,7 @@ import {
   GitBranch,
   DollarSign,
 } from 'lucide-react'
-import api from '@/services/api'
+import api from '@/services'
 import { formatAuditEntry, describeChanges, ENTITY_TYPES, AUDIT_ACTIONS } from '@/lib/audit'
 
 const ACTION_ICONS = {
