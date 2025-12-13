@@ -46,7 +46,7 @@ const STATUS_COLORS = {
 /**
  * QuoteDetail - Detailed view of a single quote
  */
-export function QuoteDetail({ quote, onBack, onQuoteUpdated }) {
+export function QuoteDetail({ quote, onBack, onQuoteUpdated, onEdit }) {
   const [customer, setCustomer] = React.useState(null)
   const [lineItems, setLineItems] = React.useState([])
   const [services, setServices] = React.useState([])
@@ -123,6 +123,32 @@ export function QuoteDetail({ quote, onBack, onQuoteUpdated }) {
   const getFactorName = (factorId) => {
     const factor = pricingFactors.find((f) => f.id === factorId)
     return factor?.name || 'Unknown Factor'
+  }
+
+  // Get display value for a selected factor (handles select, boolean, number types)
+  const getFactorDisplayValue = (sf) => {
+    // Use == for comparison to handle string/number type differences
+    const factor = pricingFactors.find((f) => f.id == sf.factor_id)
+    const factorType = factor?.factor_type || 'select'
+
+    // Check if this is a value-based factor (has 'value' property instead of 'option_id')
+    const hasValue = sf.value !== null && sf.value !== undefined
+
+    if (factorType === 'select' && !hasValue) {
+      return getFactorOptionLabel(sf.option_id)
+    } else if (factorType === 'boolean' || (hasValue && typeof sf.value === 'boolean')) {
+      // Handle both boolean true/false and string "true"/"false"
+      const boolVal = sf.value === true || sf.value === 'true'
+      const isFalse = sf.value === false || sf.value === 'false'
+      return boolVal ? 'Yes' : isFalse ? 'No' : 'N/A'
+    } else if (factorType === 'number' || (hasValue && !isNaN(Number(sf.value)))) {
+      return hasValue ? String(sf.value) : 'N/A'
+    }
+    // Fallback: try option_id lookup
+    if (sf.option_id) {
+      return getFactorOptionLabel(sf.option_id)
+    }
+    return 'N/A'
   }
 
   const getAddonName = (addonId) => {
@@ -235,8 +261,22 @@ export function QuoteDetail({ quote, onBack, onQuoteUpdated }) {
           Back to Quotes
         </Button>
         <div className="flex gap-2">
-          {effectiveStatus === 'draft' && (
-            <Button variant="outline" size="sm" className="gap-2">
+          {effectiveStatus === 'draft' && onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => onEdit({
+                quote,
+                customer,
+                lineItems,
+                services,
+                entityTypes,
+                pricingFactors,
+                factorOptions,
+                addons,
+              })}
+            >
               <Edit className="h-4 w-4" />
               Edit
             </Button>
@@ -395,7 +435,7 @@ export function QuoteDetail({ quote, onBack, onQuoteUpdated }) {
                       <div className="flex flex-wrap gap-2">
                         {item.selected_factors.map((sf, i) => (
                           <Badge key={i} variant="outline">
-                            {getFactorName(sf.factor_id)}: {getFactorOptionLabel(sf.option_id)}
+                            {getFactorName(sf.factor_id)}: {getFactorDisplayValue(sf)}
                           </Badge>
                         ))}
                       </div>

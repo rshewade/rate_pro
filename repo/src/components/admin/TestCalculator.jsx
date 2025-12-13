@@ -5,9 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { Separator } from '@/components/ui/Separator'
+import { Checkbox } from '@/components/ui/Checkbox'
+import { Input } from '@/components/ui/Input'
 import { Calculator, Play, RotateCcw, CheckCircle, AlertTriangle, Eye, EyeOff } from 'lucide-react'
 import { calculatePrice } from '@/lib/pricing/calculator'
 import { getVisibleFactors, evaluateDependencyCondition } from '@/lib/dependencies'
+import { CURRENCY_SYMBOL } from '@/lib/currency'
 
 export function TestCalculator({
   services,
@@ -73,6 +76,22 @@ export function TestCalculator({
     setCalculationResult(null)
   }
 
+  const handleBooleanChange = (factorId, checked) => {
+    setSelectedOptions(prev => ({
+      ...prev,
+      [factorId]: checked,
+    }))
+    setCalculationResult(null)
+  }
+
+  const handleNumberChange = (factorId, value) => {
+    setSelectedOptions(prev => ({
+      ...prev,
+      [factorId]: value === '' ? 0 : Number(value),
+    }))
+    setCalculationResult(null)
+  }
+
   const handleAddonToggle = (addonId) => {
     setSelectedAddons(prev =>
       prev.includes(addonId)
@@ -85,26 +104,53 @@ export function TestCalculator({
   const handleCalculate = () => {
     if (!selectedService) return
 
-    // Build selected factors array (only visible factors)
+    // Build selected factors array with correct format based on factor type
     const selectedFactorsArr = visibleFactors
-      .filter(f => selectedOptions[f.id])
-      .map(f => ({
-        factor_id: f.id,
-        option_id: selectedOptions[f.id],
-      }))
+      .filter(f => {
+        const value = selectedOptions[f.id]
+        const factorType = f.factor_type || 'select'
 
-    // Get the selected option objects
-    const selectedFactorOptions = selectedFactorsArr.map(sf => {
-      const option = factorOptions.find(o => o.id === sf.option_id)
-      return option
-    }).filter(Boolean)
+        // For select: must have option_id
+        if (factorType === 'select') return value !== undefined && value !== null
+        // For boolean: can be true or false (both valid)
+        if (factorType === 'boolean') return value !== undefined && value !== null
+        // For number: must be > 0 or is not required
+        if (factorType === 'number') return value !== undefined && value !== null
+
+        return false
+      })
+      .map(f => {
+        const factorType = f.factor_type || 'select'
+        const value = selectedOptions[f.id]
+
+        if (factorType === 'select') {
+          return {
+            factor_id: f.id,
+            option_id: value,
+          }
+        } else if (factorType === 'boolean') {
+          return {
+            factor_id: f.id,
+            value: value === true, // Ensure boolean
+          }
+        } else if (factorType === 'number') {
+          return {
+            factor_id: f.id,
+            value: Number(value) || 0,
+          }
+        }
+        return null
+      })
+      .filter(Boolean)
 
     // Get selected addon objects
     const selectedAddonObjs = addons.filter(a => selectedAddons.includes(a.id))
 
     const result = calculatePrice({
-      basePrice: selectedService.base_price,
-      selectedFactors: selectedFactorOptions,
+      service: selectedService,
+      selectedFactors: selectedFactorsArr,
+      factorOptions: factorOptions,
+      pricingFactors: pricingFactors,
       entityType: selectedEntityType,
       selectedAddons: selectedAddonObjs,
     })
@@ -115,8 +161,18 @@ export function TestCalculator({
       entityType: selectedEntityType,
       factors: selectedFactorsArr.map(sf => {
         const factor = pricingFactors.find(f => f.id === sf.factor_id)
-        const option = factorOptions.find(o => o.id === sf.option_id)
-        return { factor, option }
+        const factorType = factor?.factor_type || 'select'
+
+        if (factorType === 'select') {
+          const option = factorOptions.find(o => o.id === sf.option_id)
+          return { factor, option, value: null }
+        } else if (factorType === 'boolean') {
+          return { factor, option: null, value: sf.value }
+        } else if (factorType === 'number') {
+          const unitOption = factorOptions.find(o => o.factor_id === factor.id && o.label === 'Unit')
+          return { factor, option: unitOption, value: sf.value }
+        }
+        return { factor, option: null, value: null }
       }),
       addons: selectedAddonObjs,
       hiddenFactors: hiddenFactors,
@@ -185,7 +241,7 @@ export function TestCalculator({
                 <SelectContent>
                   {services.filter(s => s.is_active).map(service => (
                     <SelectItem key={service.id} value={String(service.id)}>
-                      {service.name} (${service.base_price})
+                      {service.name} ({CURRENCY_SYMBOL}{service.base_price})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -221,7 +277,10 @@ export function TestCalculator({
 
                   {/* Visible Factors */}
                   {visibleFactors.map(factor => {
+                    const factorType = factor.factor_type || 'select'
                     const options = factorOptions.filter(o => o.factor_id === factor.id)
+                    const unitOption = options.find(o => o.label === 'Unit')
+
                     return (
                       <div key={factor.id} className="space-y-2">
                         <div className="flex items-center gap-2">
@@ -235,24 +294,73 @@ export function TestCalculator({
                             <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
                             Visible
                           </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {factorType}
+                          </Badge>
                         </div>
-                        <Select
-                          value={selectedOptions[factor.id] ? String(selectedOptions[factor.id]) : ''}
-                          onValueChange={(value) => handleOptionChange(factor.id, value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={`Select ${factor.name.toLowerCase()}...`} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {options.map(option => (
-                              <SelectItem key={option.id} value={String(option.id)}>
-                                {option.label} ({option.price_impact_type === 'multiplier'
-                                  ? `${option.price_impact}x`
-                                  : `+$${option.price_impact}`})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+
+                        {/* Select Type - Dropdown */}
+                        {factorType === 'select' && (
+                          <Select
+                            value={selectedOptions[factor.id] ? String(selectedOptions[factor.id]) : ''}
+                            onValueChange={(value) => handleOptionChange(factor.id, value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder={`Select ${factor.name.toLowerCase()}...`} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {options.map(option => (
+                                <SelectItem key={option.id} value={String(option.id)}>
+                                  {option.label} ({option.price_impact_type === 'multiplier'
+                                    ? `${option.price_impact}x`
+                                    : `+${CURRENCY_SYMBOL}${option.price_impact}`})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+
+                        {/* Boolean Type - Checkbox Toggle */}
+                        {factorType === 'boolean' && (
+                          <div className="flex items-center gap-3 p-3 border rounded-md">
+                            <Checkbox
+                              checked={selectedOptions[factor.id] === true}
+                              onCheckedChange={(checked) => handleBooleanChange(factor.id, checked)}
+                            />
+                            <span className="text-sm text-muted-foreground flex-1">
+                              {selectedOptions[factor.id] === true ? 'Enabled' : 'Disabled'}
+                              {unitOption && selectedOptions[factor.id] === true && (
+                                <span className="ml-2 font-medium text-foreground">
+                                  (+{CURRENCY_SYMBOL}{unitOption.price_impact || 0})
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Number Type - Number Input */}
+                        {factorType === 'number' && (
+                          <div className="space-y-1">
+                            <Input
+                              type="number"
+                              min="0"
+                              step="1"
+                              value={selectedOptions[factor.id] || 0}
+                              onChange={(e) => handleNumberChange(factor.id, e.target.value)}
+                              placeholder="Enter quantity..."
+                            />
+                            {unitOption && unitOption.price_impact && (
+                              <p className="text-xs text-muted-foreground">
+                                {CURRENCY_SYMBOL}{unitOption.price_impact}/{factor.unit_label || 'unit'}
+                                {selectedOptions[factor.id] > 0 && (
+                                  <span className="ml-2 font-medium text-foreground">
+                                    = {selectedOptions[factor.id]} × {CURRENCY_SYMBOL}{unitOption.price_impact} = {CURRENCY_SYMBOL}{(selectedOptions[factor.id] * unitOption.price_impact).toLocaleString()}
+                                  </span>
+                                )}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )
                   })}
@@ -308,7 +416,7 @@ export function TestCalculator({
                               className="h-4 w-4 rounded border-gray-300"
                             />
                             <span className="text-sm">
-                              {addon.name} (+${addon.price})
+                              {addon.name} (+{CURRENCY_SYMBOL}{addon.price})
                             </span>
                             {addon.is_global && (
                               <Badge variant="secondary" className="text-xs">
@@ -361,21 +469,36 @@ export function TestCalculator({
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Base Price ({calculationResult.service.name})</span>
-                    <span>${calculationResult.basePrice.toLocaleString()}</span>
+                    <span>{CURRENCY_SYMBOL}{calculationResult.breakdown.basePrice.toLocaleString()}</span>
                   </div>
 
-                  {calculationResult.factors.map(({ factor, option }) => (
-                    <div key={factor.id} className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {factor.name}: {option.label}
-                      </span>
-                      <span>
-                        {option.price_impact_type === 'multiplier'
-                          ? `×${option.price_impact}`
-                          : `+$${option.price_impact.toLocaleString()}`}
-                      </span>
-                    </div>
-                  ))}
+                  {calculationResult.factors.map(({ factor, option, value }) => {
+                    const factorType = factor?.factor_type || 'select'
+
+                    return (
+                      <div key={factor.id} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {factor.name}:
+                          {factorType === 'select' && option && ` ${option.label}`}
+                          {factorType === 'boolean' && (value ? ' Enabled' : ' Disabled')}
+                          {factorType === 'number' && ` ${value} ${factor.unit_label || 'unit'}${value !== 1 ? 's' : ''}`}
+                        </span>
+                        <span>
+                          {factorType === 'select' && option && (
+                            option.price_impact_type === 'multiplier'
+                              ? `×${option.price_impact}`
+                              : `+${CURRENCY_SYMBOL}${option.price_impact.toLocaleString()}`
+                          )}
+                          {factorType === 'boolean' && option && value && (
+                            `+${CURRENCY_SYMBOL}${option.price_impact?.toLocaleString() || 0}`
+                          )}
+                          {factorType === 'number' && option && (
+                            `${value} × ${CURRENCY_SYMBOL}${option.price_impact} = ${CURRENCY_SYMBOL}${(value * option.price_impact).toLocaleString()}`
+                          )}
+                        </span>
+                      </div>
+                    )
+                  })}
 
                   {calculationResult.entityType && (
                     <div className="flex justify-between text-sm">
@@ -391,7 +514,7 @@ export function TestCalculator({
                       <span className="text-muted-foreground">
                         Add-on: {addon.name}
                       </span>
-                      <span>+${addon.price.toLocaleString()}</span>
+                      <span>+{CURRENCY_SYMBOL}{addon.price.toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -402,15 +525,15 @@ export function TestCalculator({
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="font-medium">Subtotal</span>
-                    <span>${calculationResult.subtotal.toLocaleString()}</span>
+                    <span>{CURRENCY_SYMBOL}{calculationResult.breakdown.subtotalAfterEntityType.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Add-ons Total</span>
-                    <span>${calculationResult.addonsTotal.toLocaleString()}</span>
+                    <span>{CURRENCY_SYMBOL}{calculationResult.breakdown.addonsTotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold pt-2 border-t">
                     <span>Total</span>
-                    <span>${calculationResult.total.toLocaleString()}</span>
+                    <span>{CURRENCY_SYMBOL}{calculationResult.breakdown.finalPrice.toLocaleString()}</span>
                   </div>
                 </div>
 

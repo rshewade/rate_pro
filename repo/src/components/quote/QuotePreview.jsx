@@ -46,6 +46,32 @@ export function QuotePreview({
     return option?.label || 'N/A'
   }
 
+  // Get display value for a selected factor (handles select, boolean, number types)
+  const getFactorDisplayValue = (sf) => {
+    // Use == for comparison to handle string/number type differences
+    const factor = pricingFactors?.find((f) => f.id == sf.factor_id)
+    const factorType = factor?.factor_type || 'select'
+
+    // Check if this is a value-based factor (has 'value' property instead of 'option_id')
+    const hasValue = sf.value !== null && sf.value !== undefined
+
+    if (factorType === 'select' && !hasValue) {
+      return getFactorOptionLabel(sf.option_id)
+    } else if (factorType === 'boolean' || (hasValue && typeof sf.value === 'boolean')) {
+      // Handle both boolean true/false and string "true"/"false"
+      const boolVal = sf.value === true || sf.value === 'true'
+      const isFalse = sf.value === false || sf.value === 'false'
+      return boolVal ? 'Yes' : isFalse ? 'No' : 'N/A'
+    } else if (factorType === 'number' || (hasValue && !isNaN(Number(sf.value)))) {
+      return hasValue ? String(sf.value) : 'N/A'
+    }
+    // Fallback: try option_id lookup
+    if (sf.option_id) {
+      return getFactorOptionLabel(sf.option_id)
+    }
+    return 'N/A'
+  }
+
   const getAddonName = (addonId) => {
     const addon = addons?.find((a) => a.id === addonId)
     return addon?.name || 'Unknown'
@@ -196,10 +222,10 @@ export function QuotePreview({
                       {getServiceName(item.service_id)}
                     </div>
                     <div className="col-span-3 text-right">
-                      ${item.base_price?.toLocaleString()}
+                      £{item.base_price?.toLocaleString()}
                     </div>
                     <div className="col-span-3 text-right font-medium">
-                      ${item.calculated_price?.toLocaleString()}
+                      £{item.calculated_price?.toLocaleString()}
                     </div>
                   </div>
                   {/* Factor details */}
@@ -207,7 +233,7 @@ export function QuotePreview({
                     <div className="px-3 pb-2 text-xs text-muted-foreground">
                       {item.selected_factors.map((sf, i) => (
                         <div key={i}>
-                          • {getFactorName(sf.factor_id)}: {getFactorOptionLabel(sf.option_id)}
+                          • {getFactorName(sf.factor_id)}: {getFactorDisplayValue(sf)}
                         </div>
                       ))}
                     </div>
@@ -229,7 +255,7 @@ export function QuotePreview({
               <div className="text-right">
                 <span className="text-lg font-bold text-[#030213] mr-8">TOTAL:</span>
                 <span className="text-2xl font-bold text-[#030213]">
-                  ${quote?.total_price?.toLocaleString()}
+                  £{quote?.total_price?.toLocaleString()}
                 </span>
               </div>
             </div>

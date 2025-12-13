@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog'
 import { Badge } from '@/components/ui/Badge'
 import { Pencil, Trash2, Plus } from 'lucide-react'
+import { CURRENCY_SYMBOL } from '@/lib/currency'
 import api from '@/services'
 
 export function AddonsTable({ addons, services, onRefresh }) {
@@ -122,7 +123,7 @@ export function AddonsTable({ addons, services, onRefresh }) {
               <TableCell className="max-w-[200px] truncate text-muted-foreground">
                 {addon.description}
               </TableCell>
-              <TableCell className="text-right">${addon.price.toLocaleString()}</TableCell>
+              <TableCell className="text-right">{CURRENCY_SYMBOL}{addon.price.toLocaleString()}</TableCell>
               <TableCell>
                 <Badge variant={addon.is_global ? 'default' : 'secondary'}>
                   {addon.is_global ? 'Global' : 'Specific'}
@@ -180,7 +181,7 @@ export function AddonsTable({ addons, services, onRefresh }) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">Price ($)</Label>
+              <Label htmlFor="price">Price ({CURRENCY_SYMBOL})</Label>
               <Input
                 id="price"
                 type="number"

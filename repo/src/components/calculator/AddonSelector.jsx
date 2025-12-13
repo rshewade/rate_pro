@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Label } from '@/components/ui/Label'
 import { Badge } from '@/components/ui/Badge'
+import { CURRENCY_SYMBOL } from '@/lib/currency'
 
 /**
  * AddonSelector - Select optional add-on services
@@ -43,7 +44,7 @@ export function AddonSelector({ addons = [], selectedAddonIds = [], onAddonToggl
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
                     <Label className="font-medium cursor-pointer">{addon.name}</Label>
-                    <Badge variant="outline">+${addon.price}</Badge>
+                    <Badge variant="outline">+{CURRENCY_SYMBOL}{addon.price}</Badge>
                   </div>
                   {addon.description && (
                     <p className="text-sm text-muted-foreground">{addon.description}</p>

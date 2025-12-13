@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Separator } from '@/components/ui/Separator'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils'
+import { formatCurrencyWhole } from '@/lib/currency'
 import { Receipt, CheckCircle2, AlertCircle, ChevronDown, Sparkles, TrendingUp, Package } from 'lucide-react'
 
 /**
@@ -14,15 +15,6 @@ import { Receipt, CheckCircle2, AlertCircle, ChevronDown, Sparkles, TrendingUp, 
  */
 export function PriceBreakdown({ breakdown, totalPrice, isValid, errors = [] }) {
   const [isDetailsOpen, setIsDetailsOpen] = React.useState(false)
-
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
 
   if (!breakdown) {
     return (
@@ -86,7 +78,7 @@ export function PriceBreakdown({ breakdown, totalPrice, isValid, errors = [] }) 
         {/* Base Price */}
         <div className="flex justify-between items-center">
           <span className="text-sm text-muted-foreground">Base Price</span>
-          <span className="font-medium">{formatCurrency(breakdown.basePrice)}</span>
+          <span className="font-medium">{formatCurrencyWhole(breakdown.basePrice)}</span>
         </div>
 
         {/* Fixed Impacts */}
@@ -97,7 +89,7 @@ export function PriceBreakdown({ breakdown, totalPrice, isValid, errors = [] }) 
               'font-medium',
               breakdown.fixedImpactsTotal > 0 ? 'text-amber-600' : 'text-emerald-600'
             )}>
-              {breakdown.fixedImpactsTotal > 0 ? '+' : ''}{formatCurrency(breakdown.fixedImpactsTotal)}
+              {breakdown.fixedImpactsTotal > 0 ? '+' : ''}{formatCurrencyWhole(breakdown.fixedImpactsTotal)}
             </span>
           </div>
         )}
@@ -110,7 +102,7 @@ export function PriceBreakdown({ breakdown, totalPrice, isValid, errors = [] }) 
               'font-medium',
               breakdown.percentageImpactsTotal > 0 ? 'text-amber-600' : 'text-emerald-600'
             )}>
-              {breakdown.percentageImpactsTotal > 0 ? '+' : ''}{formatCurrency(breakdown.percentageImpactsTotal)}
+              {breakdown.percentageImpactsTotal > 0 ? '+' : ''}{formatCurrencyWhole(breakdown.percentageImpactsTotal)}
             </span>
           </div>
         )}
@@ -121,7 +113,7 @@ export function PriceBreakdown({ breakdown, totalPrice, isValid, errors = [] }) 
             <Separator className="bg-gray-100" />
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Subtotal</span>
-              <span className="font-medium">{formatCurrency(breakdown.subtotalBeforeMultipliers)}</span>
+              <span className="font-medium">{formatCurrencyWhole(breakdown.subtotalBeforeMultipliers)}</span>
             </div>
           </>
         )}
@@ -160,7 +152,7 @@ export function PriceBreakdown({ breakdown, totalPrice, isValid, errors = [] }) 
               {breakdown.addonDetails?.map((addon, index) => (
                 <div key={index} className="flex justify-between items-center text-sm pl-6">
                   <span className="text-muted-foreground">{addon.name}</span>
-                  <span className="font-medium text-emerald-600">+{formatCurrency(addon.price)}</span>
+                  <span className="font-medium text-emerald-600">+{formatCurrencyWhole(addon.price)}</span>
                 </div>
               ))}
             </div>
@@ -187,8 +179,8 @@ export function PriceBreakdown({ breakdown, totalPrice, isValid, errors = [] }) 
               <div key={index} className="flex justify-between items-center">
                 <span className="text-muted-foreground truncate pr-4">{factor.name}</span>
                 <span className="font-medium shrink-0">
-                  {factor.type === 'fixed' && `+${formatCurrency(factor.impact)}`}
-                  {factor.type === 'percentage' && `+${formatCurrency(factor.impact)}`}
+                  {factor.type === 'fixed' && `+${formatCurrencyWhole(factor.impact)}`}
+                  {factor.type === 'percentage' && `+${formatCurrencyWhole(factor.impact)}`}
                   {factor.type === 'multiplier' && `×${factor.impact}`}
                   {factor.type === 'entity_multiplier' && `×${factor.impact}`}
                 </span>
@@ -222,7 +214,7 @@ export function PriceBreakdown({ breakdown, totalPrice, isValid, errors = [] }) 
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Price</p>
             <p className="text-sm text-muted-foreground">Monthly estimate</p>
           </div>
-          <p className="price-tag text-3xl">{formatCurrency(totalPrice)}</p>
+          <p className="price-tag text-3xl">{formatCurrencyWhole(totalPrice)}</p>
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Pencil, Trash2, Plus, ArrowLeft } from 'lucide-react'
+import { CURRENCY_SYMBOL } from '@/lib/currency'
 import api from '@/services'
 
 export function FactorOptionsTable({ factor, options, onRefresh, onBack }) {
@@ -84,7 +85,7 @@ export function FactorOptionsTable({ factor, options, onRefresh, onBack }) {
     if (option.price_impact_type === 'percentage') {
       return `${option.price_impact * 100}%`
     }
-    return option.price_impact >= 0 ? `+$${option.price_impact}` : `-$${Math.abs(option.price_impact)}`
+    return option.price_impact >= 0 ? `+${CURRENCY_SYMBOL}${option.price_impact}` : `-${CURRENCY_SYMBOL}${Math.abs(option.price_impact)}`
   }
 
   const sortedOptions = [...options].sort((a, b) => (a.display_order || 0) - (b.display_order || 0))

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { calculatePrice, validateRequiredFactors, getVisibleFactors } from '@/lib/pricing'
 
 /**
@@ -9,6 +9,7 @@ import { calculatePrice, validateRequiredFactors, getVisibleFactors } from '@/li
  * @param {Array} params.factorOptions - All factor options
  * @param {Array} params.entityTypes - Business entity types
  * @param {Array} params.addons - Available add-ons
+ * @param {Object} params.initialQuoteData - Optional quote data to pre-fill for editing
  */
 export function useCalculator({
   services = [],
@@ -16,6 +17,7 @@ export function useCalculator({
   factorOptions = [],
   entityTypes = [],
   addons = [],
+  initialQuoteData = null,
 }) {
   // State
   const [selectedServiceId, setSelectedServiceId] = useState(null)
@@ -23,6 +25,39 @@ export function useCalculator({
   const [selectedEntityTypeId, setSelectedEntityTypeId] = useState(null)
   const [selectedAddonIds, setSelectedAddonIds] = useState([])
   const [validationErrors, setValidationErrors] = useState([])
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Initialize from quote data when editing
+  useEffect(() => {
+    if (initialQuoteData && !isInitialized && services.length > 0) {
+      const { lineItems, customer } = initialQuoteData
+
+      // Get the first line item (assuming single-service quotes for now)
+      const lineItem = lineItems?.[0]
+      if (lineItem) {
+        // Set service
+        setSelectedServiceId(lineItem.service_id)
+
+        // Set selected factors from line item
+        if (lineItem.selected_factors && Array.isArray(lineItem.selected_factors)) {
+          setSelectedFactors(lineItem.selected_factors)
+        }
+
+        // Set entity type from line item or customer
+        const entityTypeId = lineItem.entity_type_id || customer?.entity_type_id
+        if (entityTypeId) {
+          setSelectedEntityTypeId(entityTypeId)
+        }
+
+        // Set selected addons
+        if (lineItem.selected_addon_ids && Array.isArray(lineItem.selected_addon_ids)) {
+          setSelectedAddonIds(lineItem.selected_addon_ids)
+        }
+      }
+
+      setIsInitialized(true)
+    }
+  }, [initialQuoteData, services, isInitialized])
 
   // Derived data
   const selectedService = useMemo(() => {
@@ -114,15 +149,20 @@ export function useCalculator({
   }, [])
 
   // Handle factor change with dependency reset
+  // Accepts either: { option_id: number } for select, { value: any } for boolean/number
   const handleFactorChange = useCallback(
-    (factorId, optionId) => {
+    (factorId, selection) => {
       setSelectedFactors((prev) => {
         // Remove existing selection for this factor
         const filtered = prev.filter((sf) => sf.factor_id !== factorId)
 
-        // Add new selection if optionId is provided
-        if (optionId !== null) {
-          return [...filtered, { factor_id: factorId, option_id: optionId }]
+        // Check if selection has a value (could be option_id or value)
+        const hasOptionId = selection?.option_id !== null && selection?.option_id !== undefined
+        const hasValue = selection?.value !== null && selection?.value !== undefined
+
+        // Add new selection if there's a value
+        if (hasOptionId || hasValue) {
+          return [...filtered, { factor_id: factorId, ...selection }]
         }
 
         return filtered
@@ -159,10 +199,30 @@ export function useCalculator({
     })
   }, [])
 
-  // Validate form
+  // Validate form - handles select, boolean, and number factor types
   const validateForm = useCallback(() => {
     const missingFactorIds = visibleFactors
-      .filter((f) => f.is_required && !selectedFactors.find((sf) => sf.factor_id === f.id))
+      .filter((f) => {
+        if (!f.is_required) return false
+
+        const selection = selectedFactors.find((sf) => sf.factor_id === f.id)
+        if (!selection) return true
+
+        const factorType = f.factor_type || 'select'
+
+        // Validate based on factor type
+        if (factorType === 'select') {
+          return !selection.option_id
+        } else if (factorType === 'boolean') {
+          // Boolean is valid if explicitly set (true or false)
+          return selection.value === undefined || selection.value === null
+        } else if (factorType === 'number') {
+          // Number must have a numeric value
+          return selection.value === undefined || selection.value === null
+        }
+
+        return false
+      })
       .map((f) => f.id)
 
     setValidationErrors(missingFactorIds)

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Separator } from '@/components/ui/Separator'
 import { CustomerForm } from './CustomerForm'
 import { validateCustomer, createQuoteFromCalculation, formatExpirationDate } from '@/lib/quote'
-import { logQuoteCreated } from '@/lib/audit'
+import { logQuoteCreated, logQuoteUpdated } from '@/lib/audit'
 import { Save, FileText, CheckCircle } from 'lucide-react'
 import api from '@/services'
 
@@ -23,8 +23,10 @@ export function SaveQuoteDialog({
   selectedAddons,
   calculationResult,
   entityTypes,
+  editQuoteData,
   onQuoteSaved,
 }) {
+  const isEditMode = !!editQuoteData
   const [customer, setCustomer] = React.useState({
     company_name: '',
     contact_name: '',
@@ -41,18 +43,31 @@ export function SaveQuoteDialog({
   // Reset state when dialog opens
   React.useEffect(() => {
     if (open) {
-      setCustomer({
-        company_name: '',
-        contact_name: '',
-        email: '',
-        phone: '',
-        entity_type_id: entityType?.id || null,
-        notes: '',
-      })
+      if (isEditMode && editQuoteData?.customer) {
+        // Pre-fill customer data from the quote being edited
+        const existingCustomer = editQuoteData.customer
+        setCustomer({
+          company_name: existingCustomer.company_name || '',
+          contact_name: existingCustomer.contact_name || '',
+          email: existingCustomer.email || '',
+          phone: existingCustomer.phone || '',
+          entity_type_id: existingCustomer.entity_type_id || entityType?.id || null,
+          notes: existingCustomer.notes || '',
+        })
+      } else {
+        setCustomer({
+          company_name: '',
+          contact_name: '',
+          email: '',
+          phone: '',
+          entity_type_id: entityType?.id || null,
+          notes: '',
+        })
+      }
       setErrors({})
       setSavedQuote(null)
     }
-  }, [open, entityType])
+  }, [open, entityType, isEditMode, editQuoteData])
 
   const handleSave = async () => {
     // Validate customer data
@@ -66,51 +81,115 @@ export function SaveQuoteDialog({
     setErrors({})
 
     try {
-      // Fetch existing quotes for quote number generation
-      const existingQuotes = await api.quotes.getAll()
+      if (isEditMode) {
+        // UPDATE existing quote
+        const existingQuote = editQuoteData.quote
+        const existingCustomer = editQuoteData.customer
+        const existingLineItem = editQuoteData.lineItems?.[0]
 
-      // Create quote data
-      const quoteData = createQuoteFromCalculation({
-        customer,
-        service,
-        selectedFactors,
-        entityType,
-        selectedAddons,
-        calculationResult,
-        existingQuotes,
-        expirationDays,
-      })
+        // 1. Update customer
+        const updatedCustomerData = {
+          ...existingCustomer,
+          ...customer,
+          updated_at: new Date().toISOString(),
+        }
+        await api.customers.update(existingCustomer.id, updatedCustomerData)
 
-      // 1. Create customer
-      const createdCustomer = await api.customers.create(quoteData.customer)
+        // 2. Update quote with new total price
+        // Only include actual quote table columns (exclude joined relations like 'customers')
+        const updatedQuote = {
+          id: existingQuote.id,
+          quote_number: existingQuote.quote_number,
+          customer_id: existingQuote.customer_id,
+          status: existingQuote.status,
+          expiration_date: existingQuote.expiration_date,
+          notes: existingQuote.notes,
+          parent_quote_id: existingQuote.parent_quote_id,
+          created_at: existingQuote.created_at,
+          // Update only the fields that changed
+          total_price: calculationResult.totalPrice,
+          updated_at: new Date().toISOString(),
+        }
+        await api.quotes.update(existingQuote.id, updatedQuote)
 
-      // 2. Create quote with customer_id
-      const quoteToSave = {
-        ...quoteData.quote,
-        customer_id: createdCustomer.id,
-      }
-      const createdQuote = await api.quotes.create(quoteToSave)
+        // 3. Update line item with new configuration
+        if (existingLineItem) {
+          // Only include actual line item table columns (exclude joined relations like 'services')
+          const updatedLineItem = {
+            id: existingLineItem.id,
+            quote_id: existingLineItem.quote_id,
+            display_order: existingLineItem.display_order,
+            created_at: existingLineItem.created_at,
+            // Update the configuration fields
+            service_id: service.id,
+            base_price: calculationResult.breakdown?.basePrice || service.base_price,
+            calculated_price: calculationResult.totalPrice,
+            selected_factors: selectedFactors,
+            entity_type_id: entityType?.id || null,
+            selected_addon_ids: selectedAddons.map((a) => a.id),
+            updated_at: new Date().toISOString(),
+          }
+          await api.quoteLineItems.update(existingLineItem.id, updatedLineItem)
+        }
 
-      // 3. Create line item with quote_id
-      const lineItemToSave = {
-        ...quoteData.lineItem,
-        quote_id: createdQuote.id,
-      }
-      await api.quoteLineItems.create(lineItemToSave)
+        // 4. Create audit log entry for update
+        await logQuoteUpdated(updatedQuote, existingQuote)
 
-      // 4. Create audit log entry
-      await logQuoteCreated(createdQuote)
+        // Set saved quote for success state
+        setSavedQuote(updatedQuote)
 
-      // Set saved quote for success state
-      setSavedQuote(createdQuote)
+        // Notify parent
+        if (onQuoteSaved) {
+          onQuoteSaved(updatedQuote)
+        }
+      } else {
+        // CREATE new quote
+        // Fetch existing quotes for quote number generation
+        const existingQuotes = await api.quotes.getAll()
 
-      // Notify parent
-      if (onQuoteSaved) {
-        onQuoteSaved(createdQuote)
+        // Create quote data
+        const quoteData = createQuoteFromCalculation({
+          customer,
+          service,
+          selectedFactors,
+          entityType,
+          selectedAddons,
+          calculationResult,
+          existingQuotes,
+          expirationDays,
+        })
+
+        // 1. Create customer
+        const createdCustomer = await api.customers.create(quoteData.customer)
+
+        // 2. Create quote with customer_id
+        const quoteToSave = {
+          ...quoteData.quote,
+          customer_id: createdCustomer.id,
+        }
+        const createdQuote = await api.quotes.create(quoteToSave)
+
+        // 3. Create line item with quote_id
+        const lineItemToSave = {
+          ...quoteData.lineItem,
+          quote_id: createdQuote.id,
+        }
+        await api.quoteLineItems.create(lineItemToSave)
+
+        // 4. Create audit log entry
+        await logQuoteCreated(createdQuote)
+
+        // Set saved quote for success state
+        setSavedQuote(createdQuote)
+
+        // Notify parent
+        if (onQuoteSaved) {
+          onQuoteSaved(createdQuote)
+        }
       }
     } catch (err) {
       console.error('Failed to save quote:', err)
-      setErrors({ submit: err.message || 'Failed to save quote. Please try again.' })
+      setErrors({ submit: err.message || `Failed to ${isEditMode ? 'update' : 'save'} quote. Please try again.` })
     } finally {
       setIsSubmitting(false)
     }
@@ -129,9 +208,11 @@ export function SaveQuoteDialog({
             <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Quote Saved!</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              {isEditMode ? 'Quote Updated!' : 'Quote Saved!'}
+            </h2>
             <p className="text-muted-foreground mb-4">
-              Your quote has been saved successfully.
+              Your quote has been {isEditMode ? 'updated' : 'saved'} successfully.
             </p>
             <div className="bg-muted rounded-lg p-4 mb-6">
               <div className="flex items-center justify-center gap-2 mb-2">
@@ -157,13 +238,18 @@ export function SaveQuoteDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Save className="h-5 w-5" />
-            Save Quote
+            {isEditMode ? 'Update Quote' : 'Save Quote'}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Quote Summary */}
           <div className="bg-muted rounded-lg p-4">
+            {isEditMode && (
+              <p className="text-sm font-mono text-muted-foreground mb-2">
+                {editQuoteData?.quote?.quote_number}
+              </p>
+            )}
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium">{service?.name}</span>
               <Badge variant="outline">Draft</Badge>
@@ -171,9 +257,11 @@ export function SaveQuoteDialog({
             <div className="text-2xl font-bold">
               ${calculationResult?.totalPrice?.toLocaleString() || '0'}
             </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Quote will expire in {expirationDays} days
-            </p>
+            {!isEditMode && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Quote will expire in {expirationDays} days
+              </p>
+            )}
           </div>
 
           <Separator />
@@ -189,29 +277,32 @@ export function SaveQuoteDialog({
             />
           </div>
 
-          <Separator />
-
-          {/* Expiration Settings */}
-          <div>
-            <h3 className="text-base font-medium mb-4">Quote Settings</h3>
-            <div className="space-y-2">
-              <Label htmlFor="expiration_days">Quote Valid For (days)</Label>
-              <Input
-                id="expiration_days"
-                type="number"
-                min="1"
-                max="365"
-                value={expirationDays}
-                onChange={(e) => setExpirationDays(Number(e.target.value) || 30)}
-                className="w-32"
-              />
-              <p className="text-sm text-muted-foreground">
-                Quote will expire on {formatExpirationDate(
-                  new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000).toISOString()
-                )}
-              </p>
-            </div>
-          </div>
+          {/* Expiration Settings - only show for new quotes */}
+          {!isEditMode && (
+            <>
+              <Separator />
+              <div>
+                <h3 className="text-base font-medium mb-4">Quote Settings</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="expiration_days">Quote Valid For (days)</Label>
+                  <Input
+                    id="expiration_days"
+                    type="number"
+                    min="1"
+                    max="365"
+                    value={expirationDays}
+                    onChange={(e) => setExpirationDays(Number(e.target.value) || 30)}
+                    className="w-32"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Quote will expire on {formatExpirationDate(
+                      new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000).toISOString()
+                    )}
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Error message */}
           {errors.submit && (
@@ -227,7 +318,10 @@ export function SaveQuoteDialog({
           </Button>
           <Button onClick={handleSave} disabled={isSubmitting} className="gap-2">
             <Save className="h-4 w-4" />
-            {isSubmitting ? 'Saving...' : 'Save Quote'}
+            {isSubmitting
+              ? (isEditMode ? 'Updating...' : 'Saving...')
+              : (isEditMode ? 'Update Quote' : 'Save Quote')
+            }
           </Button>
         </DialogFooter>
       </DialogContent>

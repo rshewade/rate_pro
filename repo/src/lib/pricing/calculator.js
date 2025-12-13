@@ -35,6 +35,7 @@ export function getBasePrice(service) {
 
 /**
  * Calculate the sum of all fixed impacts from selected factor options
+ * Also handles boolean factors (value-based) with fixed price impact
  * @param {import('./types.js').SelectedFactor[]} selectedFactors
  * @param {import('./types.js').FactorOption[]} factorOptions
  * @param {import('./types.js').PricingFactor[]} pricingFactors
@@ -45,19 +46,64 @@ export function calculateFixedImpacts(selectedFactors, factorOptions, pricingFac
   const details = []
 
   for (const selected of selectedFactors) {
-    // Use == for comparison to handle string/number type differences from json-server
-    const option = factorOptions.find((o) => o.id == selected.option_id)
-    if (!option) continue
+    const factor = pricingFactors.find((f) => f.id == selected.factor_id)
+    const factorType = factor?.factor_type || 'select'
 
-    if (option.price_impact_type === PriceImpactType.FIXED) {
-      const factor = pricingFactors.find((f) => f.id == selected.factor_id)
-      total += option.price_impact
-      details.push({
-        factorId: selected.factor_id,
-        factorName: factor?.name || 'Unknown',
-        optionLabel: option.label,
-        impact: option.price_impact,
-      })
+    // Handle select type factors (option-based)
+    if (factorType === 'select' && selected.option_id) {
+      // Use == for comparison to handle string/number type differences from json-server
+      const option = factorOptions.find((o) => o.id == selected.option_id)
+      if (!option) continue
+
+      if (option.price_impact_type === PriceImpactType.FIXED) {
+        total += option.price_impact
+        details.push({
+          factorId: selected.factor_id,
+          factorName: factor?.name || 'Unknown',
+          optionLabel: option.label,
+          impact: option.price_impact,
+        })
+      }
+    }
+
+    // Handle boolean type factors (value-based)
+    // If checked (value === true), look for an "Enabled" option with price_impact
+    if (factorType === 'boolean' && selected.value === true) {
+      const enabledOption = factorOptions.find(
+        (o) => o.factor_id == selected.factor_id && o.label === 'Enabled'
+      )
+      if (enabledOption && enabledOption.price_impact_type === PriceImpactType.FIXED) {
+        const impact = enabledOption.price_impact || 0
+        if (impact !== 0) {
+          total += impact
+          details.push({
+            factorId: selected.factor_id,
+            factorName: factor?.name || 'Unknown',
+            optionLabel: 'Yes',
+            impact: impact,
+          })
+        }
+      }
+    }
+
+    // Handle number type factors (value × unit_price from "Unit" option)
+    if (factorType === 'number' && selected.value !== null && selected.value !== undefined) {
+      const unitOption = factorOptions.find(
+        (o) => o.factor_id == selected.factor_id && o.label === 'Unit'
+      )
+      if (unitOption && unitOption.price_impact) {
+        const quantity = Number(selected.value) || 0
+        const impact = quantity * unitOption.price_impact
+        if (impact !== 0) {
+          total += impact
+          details.push({
+            factorId: selected.factor_id,
+            factorName: factor?.name || 'Unknown',
+            optionLabel: `${quantity} × £${unitOption.price_impact}`,
+            impact: roundCurrency(impact),
+          })
+        }
+      }
     }
   }
 
@@ -66,6 +112,7 @@ export function calculateFixedImpacts(selectedFactors, factorOptions, pricingFac
 
 /**
  * Calculate the sum of all percentage impacts based on the base price
+ * Only applies to select-type factors with option_id
  * @param {number} basePrice
  * @param {import('./types.js').SelectedFactor[]} selectedFactors
  * @param {import('./types.js').FactorOption[]} factorOptions
@@ -82,6 +129,9 @@ export function calculatePercentageImpacts(
   const details = []
 
   for (const selected of selectedFactors) {
+    // Skip non-select factors (boolean/number don't use percentage impacts from options)
+    if (!selected.option_id) continue
+
     // Use == for comparison to handle string/number type differences from json-server
     const option = factorOptions.find((o) => o.id == selected.option_id)
     if (!option) continue
@@ -107,6 +157,7 @@ export function calculatePercentageImpacts(
 /**
  * Calculate the combined multiplier from all multiplier impacts
  * Multipliers are applied sequentially (multiplied together)
+ * Only applies to select-type factors with option_id
  * @param {import('./types.js').SelectedFactor[]} selectedFactors
  * @param {import('./types.js').FactorOption[]} factorOptions
  * @param {import('./types.js').PricingFactor[]} pricingFactors
@@ -117,6 +168,9 @@ export function calculateMultiplierImpacts(selectedFactors, factorOptions, prici
   const details = []
 
   for (const selected of selectedFactors) {
+    // Skip non-select factors (boolean/number don't use multiplier impacts from options)
+    if (!selected.option_id) continue
+
     // Use == for comparison to handle string/number type differences from json-server
     const option = factorOptions.find((o) => o.id == selected.option_id)
     if (!option) continue

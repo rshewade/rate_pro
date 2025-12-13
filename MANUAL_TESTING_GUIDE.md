@@ -6,16 +6,6 @@ This document provides comprehensive test scenarios for manually validating the 
 
 Before testing, ensure the application is running:
 
-```bash
-# Start both frontend and mock API
-npm run dev & npm run server
-```
-
-- Frontend: http://localhost:5173
-- API Server: http://localhost:3001
-
----
-
 ## 1. Calculator Interface
 
 ### 1.1 Service Selection
@@ -572,7 +562,6 @@ npm run dev & npm run server
 ### Currency and Formatting
 - **All prices in GBP (£)** using en-GB locale formatting
 - Currency format: £X,XXX.XX (e.g., £1,234.56)
-- Centralized currency configuration in `/src/lib/currency.js`
 
 ### Quote Settings
 - Default quote expiration: 30 days
@@ -588,11 +577,5 @@ npm run dev & npm run server
 - Supported browsers: Chrome, Firefox, Safari, Edge (latest versions)
 - Mobile responsive design supported
 - LocalStorage used for Admin Panel filter persistence
-
-### Recent Updates (Tasks 13-16)
-- Task 13: Number factors now support quantity × unit_price calculations
-- Task 14: Three distinct factor input types (Select, Boolean, Number)
-- Task 15: Quote editing functionality for Draft quotes
-- Task 16: Currency switched from USD to GBP; Admin Panel service filter added
 
 **Last Updated:** December 10, 2025

@@ -194,6 +194,32 @@ export function QuotePDF({
     return option?.label || 'N/A'
   }
 
+  // Get display value for a selected factor (handles select, boolean, number types)
+  const getFactorDisplayValue = (sf) => {
+    // Use == for comparison to handle string/number type differences
+    const factor = pricingFactors?.find((f) => f.id == sf.factor_id)
+    const factorType = factor?.factor_type || 'select'
+
+    // Check if this is a value-based factor (has 'value' property instead of 'option_id')
+    const hasValue = sf.value !== null && sf.value !== undefined
+
+    if (factorType === 'select' && !hasValue) {
+      return getFactorOptionLabel(sf.option_id)
+    } else if (factorType === 'boolean' || (hasValue && typeof sf.value === 'boolean')) {
+      // Handle both boolean true/false and string "true"/"false"
+      const boolVal = sf.value === true || sf.value === 'true'
+      const isFalse = sf.value === false || sf.value === 'false'
+      return boolVal ? 'Yes' : isFalse ? 'No' : 'N/A'
+    } else if (factorType === 'number' || (hasValue && !isNaN(Number(sf.value)))) {
+      return hasValue ? String(sf.value) : 'N/A'
+    }
+    // Fallback: try option_id lookup
+    if (sf.option_id) {
+      return getFactorOptionLabel(sf.option_id)
+    }
+    return 'N/A'
+  }
+
   const getAddonName = (addonId) => {
     const addon = addons?.find((a) => a.id === addonId)
     return addon?.name || 'Unknown'
@@ -281,15 +307,15 @@ export function QuotePDF({
               <View key={index}>
                 <View style={styles.tableRow}>
                   <Text style={styles.tableCol1}>{getServiceName(item.service_id)}</Text>
-                  <Text style={styles.tableCol2}>${item.base_price?.toLocaleString()}</Text>
-                  <Text style={styles.tableCol3}>${item.calculated_price?.toLocaleString()}</Text>
+                  <Text style={styles.tableCol2}>£{item.base_price?.toLocaleString()}</Text>
+                  <Text style={styles.tableCol3}>£{item.calculated_price?.toLocaleString()}</Text>
                 </View>
                 {/* Factor Details */}
                 {item.selected_factors?.length > 0 && (
                   <View style={styles.lineItemDetails}>
                     {item.selected_factors.map((sf, i) => (
                       <Text key={i}>
-                        • {getFactorName(sf.factor_id)}: {getFactorOptionLabel(sf.option_id)}
+                        • {getFactorName(sf.factor_id)}: {getFactorDisplayValue(sf)}
                       </Text>
                     ))}
                   </View>
@@ -310,7 +336,7 @@ export function QuotePDF({
           <View style={styles.totalRow}>
             <Text style={[styles.totalLabel, styles.grandTotal]}>TOTAL:</Text>
             <Text style={[styles.totalValue, styles.grandTotal]}>
-              ${quote?.total_price?.toLocaleString()}
+              £{quote?.total_price?.toLocaleString()}
             </Text>
           </View>
         </View>

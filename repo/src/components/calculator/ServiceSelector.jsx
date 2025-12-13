@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Label } from '@/components/ui/Label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
+import { CURRENCY_SYMBOL } from '@/lib/currency'
 
 /**
  * ServiceSelector - Select a service to get pricing
@@ -45,7 +46,7 @@ export function ServiceSelector({ services = [], selectedServiceId, onServiceSel
             <SelectContent>
               {services.map((service) => (
                 <SelectItem key={service.id} value={String(service.id)}>
-                  {service.name} - Starting at ${service.base_price.toLocaleString()}
+                  {service.name} - Starting at {CURRENCY_SYMBOL}{service.base_price.toLocaleString()}
                 </SelectItem>
               ))}
             </SelectContent>

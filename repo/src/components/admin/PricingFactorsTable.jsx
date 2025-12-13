@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { Pencil, Trash2, Plus, ChevronRight } from 'lucide-react'
+import { CURRENCY_SYMBOL } from '@/lib/currency'
 import api from '@/services'
 
 export function PricingFactorsTable({ pricingFactors, factorOptions, services, onRefresh, onSelectFactor }) {
@@ -19,8 +20,21 @@ export function PricingFactorsTable({ pricingFactors, factorOptions, services, o
     factor_type: 'select',
     is_required: true,
     display_order: '1',
+    price_impact: '0', // For boolean factors: price to add when checked
+    unit_price: '0', // For number factors: price per unit
   })
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+
+  // Service filter state with localStorage persistence
+  const [selectedServiceFilter, setSelectedServiceFilter] = React.useState(() => {
+    const saved = localStorage.getItem('pricingFactors_serviceFilter')
+    return saved || 'all'
+  })
+
+  // Persist service filter selection
+  React.useEffect(() => {
+    localStorage.setItem('pricingFactors_serviceFilter', selectedServiceFilter)
+  }, [selectedServiceFilter])
 
   const handleAdd = () => {
     setEditingFactor(null)
@@ -31,12 +45,29 @@ export function PricingFactorsTable({ pricingFactors, factorOptions, services, o
       factor_type: 'select',
       is_required: true,
       display_order: '1',
+      price_impact: '0',
+      unit_price: '0',
     })
     setIsDialogOpen(true)
   }
 
   const handleEdit = (factor) => {
     setEditingFactor(factor)
+    // For boolean factors, get price_impact from the "Enabled" option
+    // For number factors, get unit_price from the "Unit" option
+    let priceImpact = 0
+    let unitPrice = 0
+    if (factor.factor_type === 'boolean') {
+      const enabledOption = factorOptions.find(
+        (o) => o.factor_id == factor.id && o.label === 'Enabled'
+      )
+      priceImpact = enabledOption?.price_impact || 0
+    } else if (factor.factor_type === 'number') {
+      const unitOption = factorOptions.find(
+        (o) => o.factor_id == factor.id && o.label === 'Unit'
+      )
+      unitPrice = unitOption?.price_impact || 0
+    }
     setFormData({
       service_id: String(factor.service_id),
       name: factor.name,
@@ -44,6 +75,8 @@ export function PricingFactorsTable({ pricingFactors, factorOptions, services, o
       factor_type: factor.factor_type || 'select',
       is_required: factor.is_required !== false,
       display_order: String(factor.display_order || 1),
+      price_impact: String(priceImpact),
+      unit_price: String(unitPrice),
     })
     setIsDialogOpen(true)
   }
@@ -73,15 +106,78 @@ export function PricingFactorsTable({ pricingFactors, factorOptions, services, o
     setIsSubmitting(true)
     try {
       const data = {
-        ...formData,
         service_id: Number(formData.service_id),
+        name: formData.name,
+        description: formData.description,
+        factor_type: formData.factor_type,
+        is_required: formData.is_required,
         display_order: Number(formData.display_order),
       }
+
+      let factorId = editingFactor?.id
       if (editingFactor) {
         await api.pricingFactors.update(editingFactor.id, data)
       } else {
-        await api.pricingFactors.create(data)
+        const created = await api.pricingFactors.create(data)
+        factorId = created.id
       }
+
+      // For boolean factors, manage the "Enabled" option in factor_options
+      if (formData.factor_type === 'boolean' && factorId) {
+        const priceImpact = Number(formData.price_impact) || 0
+        const existingOptions = factorOptions.filter((o) => o.factor_id == factorId)
+        const enabledOption = existingOptions.find((o) => o.label === 'Enabled')
+
+        if (priceImpact > 0) {
+          // Create or update the "Enabled" option
+          if (enabledOption) {
+            await api.factorOptions.update(enabledOption.id, {
+              price_impact: priceImpact,
+              price_impact_type: 'fixed',
+            })
+          } else {
+            await api.factorOptions.create({
+              factor_id: factorId,
+              label: 'Enabled',
+              price_impact: priceImpact,
+              price_impact_type: 'fixed',
+              display_order: 1,
+            })
+          }
+        } else if (enabledOption) {
+          // Remove the option if price impact is 0
+          await api.factorOptions.delete(enabledOption.id)
+        }
+      }
+
+      // For number factors, manage the "Unit" option in factor_options
+      if (formData.factor_type === 'number' && factorId) {
+        const unitPrice = Number(formData.unit_price) || 0
+        const existingOptions = factorOptions.filter((o) => o.factor_id == factorId)
+        const unitOption = existingOptions.find((o) => o.label === 'Unit')
+
+        if (unitPrice > 0) {
+          // Create or update the "Unit" option (used as multiplier for quantity)
+          if (unitOption) {
+            await api.factorOptions.update(unitOption.id, {
+              price_impact: unitPrice,
+              price_impact_type: 'fixed', // Will be multiplied by quantity in calculator
+            })
+          } else {
+            await api.factorOptions.create({
+              factor_id: factorId,
+              label: 'Unit',
+              price_impact: unitPrice,
+              price_impact_type: 'fixed',
+              display_order: 1,
+            })
+          }
+        } else if (unitOption) {
+          // Remove the option if unit price is 0
+          await api.factorOptions.delete(unitOption.id)
+        }
+      }
+
       setIsDialogOpen(false)
       onRefresh()
     } catch (err) {
@@ -109,17 +205,46 @@ export function PricingFactorsTable({ pricingFactors, factorOptions, services, o
     return grouped
   }, [pricingFactors, services])
 
+  // Filter services based on selection
+  const filteredServices = React.useMemo(() => {
+    if (selectedServiceFilter === 'all') {
+      return services
+    }
+    return services.filter((s) => String(s.id) === selectedServiceFilter)
+  }, [services, selectedServiceFilter])
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Pricing Factors ({pricingFactors.length})</h3>
-        <Button onClick={handleAdd} size="sm" className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Factor
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="service-filter" className="text-sm whitespace-nowrap">Filter by Service:</Label>
+            <Select
+              value={selectedServiceFilter}
+              onValueChange={setSelectedServiceFilter}
+            >
+              <SelectTrigger id="service-filter" className="w-[200px]">
+                <SelectValue placeholder="All Services" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Services</SelectItem>
+                {services.map((service) => (
+                  <SelectItem key={service.id} value={String(service.id)}>
+                    {service.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={handleAdd} size="sm" className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Factor
+          </Button>
+        </div>
       </div>
 
-      {services.map((service) => (
+      {filteredServices.map((service) => (
         <div key={service.id} className="border rounded-lg overflow-hidden">
           <div className="bg-muted px-4 py-2 font-medium">{service.name}</div>
           <Table>
@@ -147,15 +272,41 @@ export function PricingFactorsTable({ pricingFactors, factorOptions, services, o
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onSelectFactor(factor)}
-                      className="gap-1"
-                    >
-                      {getOptionCount(factor.id)} options
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
+                    {factor.factor_type === 'select' || !factor.factor_type ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onSelectFactor(factor)}
+                        className="gap-1"
+                      >
+                        {getOptionCount(factor.id)} options
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    ) : factor.factor_type === 'boolean' ? (
+                      <span className="text-sm text-muted-foreground">
+                        {(() => {
+                          const enabledOption = factorOptions.find(
+                            (o) => o.factor_id == factor.id && o.label === 'Enabled'
+                          )
+                          return enabledOption?.price_impact
+                            ? `+${CURRENCY_SYMBOL}${enabledOption.price_impact}`
+                            : 'No impact'
+                        })()}
+                      </span>
+                    ) : factor.factor_type === 'number' ? (
+                      <span className="text-sm text-muted-foreground">
+                        {(() => {
+                          const unitOption = factorOptions.find(
+                            (o) => o.factor_id == factor.id && o.label === 'Unit'
+                          )
+                          return unitOption?.price_impact
+                            ? `${CURRENCY_SYMBOL}${unitOption.price_impact}/unit`
+                            : 'No unit price'
+                        })()}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">N/A</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
@@ -251,6 +402,40 @@ export function PricingFactorsTable({ pricingFactors, factorOptions, services, o
                 />
               </div>
             </div>
+            {formData.factor_type === 'boolean' && (
+              <div className="space-y-2">
+                <Label htmlFor="price_impact">Price Impact (when checked)</Label>
+                <Input
+                  id="price_impact"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.price_impact}
+                  onChange={(e) => setFormData({ ...formData, price_impact: e.target.value })}
+                  placeholder="e.g., 50 for +$50"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Amount to add to the price when this option is enabled
+                </p>
+              </div>
+            )}
+            {formData.factor_type === 'number' && (
+              <div className="space-y-2">
+                <Label htmlFor="unit_price">Unit Price (per unit entered)</Label>
+                <Input
+                  id="unit_price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.unit_price}
+                  onChange={(e) => setFormData({ ...formData, unit_price: e.target.value })}
+                  placeholder="e.g., 25 for $25 per unit"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Price per unit - will be multiplied by the quantity entered
+                </p>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"

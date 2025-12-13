@@ -8,10 +8,26 @@ import { Button } from '@/components/ui/Button'
 
 function App() {
   const [view, setView] = React.useState('calculator')
+  const [editQuoteData, setEditQuoteData] = React.useState(null)
 
   const handleClearCache = () => {
     localStorage.clear()
     window.location.reload()
+  }
+
+  const handleEditQuote = (quoteData) => {
+    setEditQuoteData(quoteData)
+    setView('calculator')
+  }
+
+  const handleCancelEdit = () => {
+    setEditQuoteData(null)
+    setView('quotes')
+  }
+
+  const handleQuoteUpdated = (updatedQuote) => {
+    setEditQuoteData(null)
+    setView('quotes')
   }
 
   return (
@@ -36,7 +52,10 @@ function App() {
               <Button
                 variant={view === 'calculator' ? 'default' : 'outline'}
                 className="gap-2"
-                onClick={() => setView('calculator')}
+                onClick={() => {
+                  setEditQuoteData(null)
+                  setView('calculator')
+                }}
               >
                 <CalcIcon className="w-4 h-4" />
                 Calculator
@@ -72,8 +91,14 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 py-12 px-6">
-        {view === 'calculator' && <Calculator />}
-        {view === 'quotes' && <QuotesManager />}
+        {view === 'calculator' && (
+          <Calculator
+            editQuoteData={editQuoteData}
+            onCancelEdit={handleCancelEdit}
+            onQuoteUpdated={handleQuoteUpdated}
+          />
+        )}
+        {view === 'quotes' && <QuotesManager onEditQuote={handleEditQuote} />}
         {view === 'admin' && <AdminPanel />}
         {view === 'docs' && <Documentation />}
       </main>

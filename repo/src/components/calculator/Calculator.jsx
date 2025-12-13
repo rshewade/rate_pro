@@ -7,14 +7,18 @@ import { Label } from '@/components/ui/Label'
 import { Separator } from '@/components/ui/Separator'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { Checkbox } from '@/components/ui/Checkbox'
+import { Input } from '@/components/ui/Input'
 import { SaveQuoteDialog } from '@/components/quote'
-import { AlertCircle, RefreshCw, Calculator as CalcIcon, Download, Save } from 'lucide-react'
+import { CURRENCY_SYMBOL } from '@/lib/currency'
+import { AlertCircle, RefreshCw, Calculator as CalcIcon, Download, Save, X, Edit } from 'lucide-react'
 
 /**
  * Main Calculator Component
  * Clean, form-based pricing calculator matching the design reference
  */
-export function Calculator() {
+export function Calculator({ editQuoteData, onCancelEdit, onQuoteUpdated }) {
+  const isEditMode = !!editQuoteData
   const { services, pricingFactors, factorOptions, entityTypes, addons, isLoading, error, refetch } =
     useApiData()
 
@@ -42,6 +46,7 @@ export function Calculator() {
     factorOptions,
     entityTypes,
     addons,
+    initialQuoteData: editQuoteData,
   })
 
   const [showResult, setShowResult] = React.useState(false)
@@ -56,7 +61,41 @@ export function Calculator() {
   const getSelectedOptionId = (factorId) => {
     // Use == for comparison to handle string/number type differences
     const selection = selectedFactors.find((sf) => sf.factor_id == factorId)
-    return selection ? String(selection.option_id) : ''
+    return selection?.option_id ? String(selection.option_id) : ''
+  }
+
+  const getSelectedValue = (factorId) => {
+    const selection = selectedFactors.find((sf) => sf.factor_id == factorId)
+    return selection?.value
+  }
+
+  // Helper to get display value for any factor type (select, boolean, number)
+  const getFactorDisplayValue = (factor) => {
+    const selection = selectedFactors.find((sf) => sf.factor_id == factor.id)
+    if (!selection) return 'N/A'
+
+    const factorType = factor.factor_type || 'select'
+    const hasValue = selection.value !== null && selection.value !== undefined
+
+    if (factorType === 'select' && !hasValue) {
+      // Lookup option label
+      const option = serviceFactorOptions.find((o) => o.id == selection.option_id)
+      return option?.label || 'N/A'
+    } else if (factorType === 'boolean' || (hasValue && typeof selection.value === 'boolean')) {
+      // Handle both boolean true/false and string "true"/"false"
+      const boolVal = selection.value === true || selection.value === 'true'
+      const isFalse = selection.value === false || selection.value === 'false'
+      return boolVal ? 'Yes' : isFalse ? 'No' : 'N/A'
+    } else if (factorType === 'number' || (hasValue && !isNaN(Number(selection.value)))) {
+      return hasValue ? String(selection.value) : 'N/A'
+    }
+
+    // Fallback: try option_id lookup
+    if (selection.option_id) {
+      const option = serviceFactorOptions.find((o) => o.id == selection.option_id)
+      return option?.label || 'N/A'
+    }
+    return 'N/A'
   }
 
   const exportQuote = () => {
@@ -65,7 +104,7 @@ export function Calculator() {
     const { breakdown } = calculationResult
 
     // Build price breakdown lines
-    const priceLines = [`  Base Price: $${breakdown.basePrice?.toLocaleString() || '0'}`]
+    const priceLines = [`  Base Price: ${CURRENCY_SYMBOL}${breakdown.basePrice?.toLocaleString() || '0'}`]
 
     // Add each factor detail with dollar amount
     breakdown.factorDetails?.forEach((detail) => {
@@ -81,12 +120,12 @@ export function Calculator() {
         return
       }
 
-      priceLines.push(`  ${detail.name}: ${dollarAmount >= 0 ? '+' : ''}$${Math.abs(dollarAmount).toLocaleString()}`)
+      priceLines.push(`  ${detail.name}: ${dollarAmount >= 0 ? '+' : ''}${CURRENCY_SYMBOL}${Math.abs(dollarAmount).toLocaleString()}`)
     })
 
     // Add addon details
     breakdown.addonDetails?.forEach((addon) => {
-      priceLines.push(`  ${addon.name}: +$${addon.price.toLocaleString()}`)
+      priceLines.push(`  ${addon.name}: +${CURRENCY_SYMBOL}${addon.price.toLocaleString()}`)
     })
 
     const content = `
@@ -109,7 +148,7 @@ ${visibleFactors
 Price Breakdown:
 ${priceLines.join('\n')}
 
-TOTAL PRICE: $${calculationResult.totalPrice.toLocaleString()}
+TOTAL PRICE: ${CURRENCY_SYMBOL}${calculationResult.totalPrice.toLocaleString()}
 
 ---
 This is an estimate only. Final pricing may vary based on specific requirements.
@@ -178,14 +217,44 @@ This is an estimate only. Final pricing may vary based on specific requirements.
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Page Title */}
       <div className="text-center space-y-2">
-        <h1 className="flex items-center justify-center gap-2 text-xl font-semibold">
-          <CalcIcon className="w-6 h-6" />
-          RatePro Pricing Calculator
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Get instant, transparent pricing for accounting services
-        </p>
+        {isEditMode ? (
+          <>
+            <h1 className="flex items-center justify-center gap-2 text-xl font-semibold">
+              <Edit className="w-6 h-6" />
+              Editing Quote {editQuoteData?.quote?.quote_number}
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Modify the quote configuration and save your changes
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 className="flex items-center justify-center gap-2 text-xl font-semibold">
+              <CalcIcon className="w-6 h-6" />
+              RatePro Pricing Calculator
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Get instant, transparent pricing for accounting services
+            </p>
+          </>
+        )}
       </div>
+
+      {/* Edit Mode Banner */}
+      {isEditMode && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-blue-800">
+            <Edit className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              You are editing an existing quote. Changes will update the original quote.
+            </span>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onCancelEdit} className="text-blue-800 hover:text-blue-900">
+            <X className="w-4 h-4 mr-1" />
+            Cancel
+          </Button>
+        </div>
+      )}
 
       {/* Calculator Form */}
       <Card>
@@ -228,27 +297,71 @@ This is an estimate only. Final pricing may vary based on specific requirements.
                 {visibleFactors.map((factor) => {
                   // Use == for comparison to handle string/number type differences from json-server
                   const options = serviceFactorOptions.filter((o) => o.factor_id == factor.id)
+                  const factorType = factor.factor_type || 'select'
+                  const selectedValue = getSelectedValue(factor.id)
+
                   return (
                     <div key={factor.id} className="space-y-2">
-                      <Label>{factor.name}</Label>
-                      <Select
-                        value={getSelectedOptionId(factor.id)}
-                        onValueChange={(value) => {
-                          handleFactorChange(factor.id, value ? Number(value) : null)
-                          setShowResult(false)
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={`Select ${factor.name.toLowerCase()}...`} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {options.map((option) => (
-                            <SelectItem key={option.id} value={String(option.id)}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {/* Select Type */}
+                      {factorType === 'select' && (
+                        <>
+                          <Label>{factor.name}</Label>
+                          <Select
+                            value={getSelectedOptionId(factor.id)}
+                            onValueChange={(value) => {
+                              handleFactorChange(factor.id, { option_id: value ? Number(value) : null })
+                              setShowResult(false)
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder={`Select ${factor.name.toLowerCase()}...`} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {options.map((option) => (
+                                <SelectItem key={option.id} value={String(option.id)}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </>
+                      )}
+
+                      {/* Boolean Type */}
+                      {factorType === 'boolean' && (
+                        <div className="flex items-center gap-3">
+                          <Checkbox
+                            id={`factor-${factor.id}`}
+                            checked={selectedValue === true}
+                            onCheckedChange={(checked) => {
+                              handleFactorChange(factor.id, { value: checked })
+                              setShowResult(false)
+                            }}
+                          />
+                          <Label htmlFor={`factor-${factor.id}`} className="cursor-pointer">
+                            {factor.name}
+                          </Label>
+                        </div>
+                      )}
+
+                      {/* Number Type */}
+                      {factorType === 'number' && (
+                        <>
+                          <Label>{factor.name}</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="any"
+                            value={selectedValue ?? ''}
+                            onChange={(e) => {
+                              const parsed = parseFloat(e.target.value)
+                              handleFactorChange(factor.id, { value: isNaN(parsed) ? null : parsed })
+                              setShowResult(false)
+                            }}
+                            placeholder={`Enter ${factor.name.toLowerCase()}...`}
+                          />
+                        </>
+                      )}
                     </div>
                   )
                 })}
@@ -303,7 +416,7 @@ This is an estimate only. Final pricing may vary based on specific requirements.
                     />
                     <span className="flex-1 text-sm font-medium">{addon.name}</span>
                     <span className="text-sm text-muted-foreground">
-                      +${addon.price.toLocaleString()}
+                      +{CURRENCY_SYMBOL}{addon.price.toLocaleString()}
                     </span>
                   </label>
                 ))}
@@ -335,7 +448,7 @@ This is an estimate only. Final pricing may vary based on specific requirements.
                 </Button>
                 <Button size="sm" onClick={() => setShowSaveDialog(true)}>
                   <Save className="w-4 h-4 mr-2" />
-                  Save Quote
+                  {isEditMode ? 'Update Quote' : 'Save Quote'}
                 </Button>
               </div>
             </div>
@@ -354,18 +467,12 @@ This is an estimate only. Final pricing may vary based on specific requirements.
             <div>
               <Label className="text-muted-foreground">Configuration</Label>
               <div className="mt-2 space-y-1">
-                {visibleFactors.map((factor) => {
-                  // Use == for comparison to handle string/number type differences
-                  const selectedOption = serviceFactorOptions.find(
-                    (o) => o.id == getSelectedOptionId(factor.id)
-                  )
-                  return (
-                    <div key={factor.id} className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{factor.name}:</span>
-                      <span>{selectedOption?.label || 'N/A'}</span>
-                    </div>
-                  )
-                })}
+                {visibleFactors.map((factor) => (
+                  <div key={factor.id} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{factor.name}:</span>
+                    <span>{getFactorDisplayValue(factor)}</span>
+                  </div>
+                ))}
                 {selectedEntityTypeId && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Entity Type:</span>
@@ -385,7 +492,7 @@ This is an estimate only. Final pricing may vary based on specific requirements.
               <div className="mt-2 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Base Price</span>
-                  <span>${calculationResult.breakdown.basePrice?.toLocaleString() || '0'}</span>
+                  <span>{CURRENCY_SYMBOL}{calculationResult.breakdown.basePrice?.toLocaleString() || '0'}</span>
                 </div>
                 {/* Show each factor detail with its name and dollar amount */}
                 {calculationResult.breakdown.factorDetails?.map((detail, index) => {
@@ -409,7 +516,7 @@ This is an estimate only. Final pricing may vary based on specific requirements.
                     <div key={index} className="flex justify-between text-sm">
                       <span>{detail.name}</span>
                       <span className={dollarAmount < 0 ? 'text-green-600' : ''}>
-                        {dollarAmount >= 0 ? '+' : ''}${Math.abs(dollarAmount).toLocaleString()}
+                        {dollarAmount >= 0 ? '+' : ''}{CURRENCY_SYMBOL}{Math.abs(dollarAmount).toLocaleString()}
                       </span>
                     </div>
                   )
@@ -418,7 +525,7 @@ This is an estimate only. Final pricing may vary based on specific requirements.
                 {calculationResult.breakdown.addonDetails?.map((addon, index) => (
                   <div key={`addon-${index}`} className="flex justify-between text-sm">
                     <span>{addon.name}</span>
-                    <span>+${addon.price.toLocaleString()}</span>
+                    <span>+{CURRENCY_SYMBOL}{addon.price.toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -430,7 +537,7 @@ This is an estimate only. Final pricing may vary based on specific requirements.
             <div className="flex items-center justify-between pt-2">
               <span className="text-lg font-medium">Total Price</span>
               <Badge className="text-lg px-4 py-2">
-                ${calculationResult.totalPrice.toLocaleString()}
+                {CURRENCY_SYMBOL}{calculationResult.totalPrice.toLocaleString()}
               </Badge>
             </div>
 
@@ -451,8 +558,12 @@ This is an estimate only. Final pricing may vary based on specific requirements.
         selectedAddons={selectedAddons}
         calculationResult={calculationResult}
         entityTypes={entityTypes}
+        editQuoteData={editQuoteData}
         onQuoteSaved={(quote) => {
           console.log('Quote saved:', quote)
+          if (isEditMode && onQuoteUpdated) {
+            onQuoteUpdated(quote)
+          }
         }}
       />
     </div>

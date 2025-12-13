@@ -3,7 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Label } from '@/components/ui/Label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
+import { Checkbox } from '@/components/ui/Checkbox'
+import { Input } from '@/components/ui/Input'
 import { isFactorVisible } from '@/lib/pricing'
+import { CURRENCY_SYMBOL } from '@/lib/currency'
 import { AlertCircle } from 'lucide-react'
 
 /**
@@ -11,7 +14,7 @@ import { AlertCircle } from 'lucide-react'
  * @param {Object} props
  * @param {Array} props.pricingFactors - All pricing factors for the service
  * @param {Array} props.factorOptions - All factor options
- * @param {Array} props.selectedFactors - Currently selected factor values [{factor_id, option_id}]
+ * @param {Array} props.selectedFactors - Currently selected factor values [{factor_id, option_id?, value?}]
  * @param {Function} props.onFactorChange - Callback when a factor selection changes
  * @param {Array} props.validationErrors - Array of factor IDs with validation errors
  */
@@ -29,15 +32,32 @@ export function PricingFactorForm({
       .sort((a, b) => a.display_order - b.display_order)
   }
 
-  // Get current selection for a factor
+  // Get current selection for a factor (for select type)
   const getSelectedOption = (factorId) => {
     const selection = selectedFactors.find((sf) => sf.factor_id === factorId)
     return selection?.option_id ? String(selection.option_id) : ''
   }
 
-  // Handle selection change
-  const handleChange = (factorId, optionId) => {
-    onFactorChange(factorId, optionId ? Number(optionId) : null)
+  // Get current value for a factor (for boolean/number types)
+  const getSelectedValue = (factorId) => {
+    const selection = selectedFactors.find((sf) => sf.factor_id === factorId)
+    return selection?.value
+  }
+
+  // Handle selection change for select type
+  const handleSelectChange = (factorId, optionId) => {
+    onFactorChange(factorId, { option_id: optionId ? Number(optionId) : null })
+  }
+
+  // Handle value change for boolean type
+  const handleBooleanChange = (factorId, checked) => {
+    onFactorChange(factorId, { value: checked })
+  }
+
+  // Handle value change for number type
+  const handleNumberChange = (factorId, numValue) => {
+    const parsed = parseFloat(numValue)
+    onFactorChange(factorId, { value: isNaN(parsed) ? null : parsed })
   }
 
   // Filter visible factors based on dependencies
@@ -59,7 +79,7 @@ export function PricingFactorForm({
   const formatPriceImpact = (option) => {
     if (option.price_impact === 0) return ''
     if (option.price_impact_type === 'fixed') {
-      return ` (+$${option.price_impact})`
+      return ` (+${CURRENCY_SYMBOL}${option.price_impact})`
     }
     if (option.price_impact_type === 'multiplier' && option.price_impact !== 1) {
       return ` (×${option.price_impact})`
@@ -78,45 +98,92 @@ export function PricingFactorForm({
       <CardContent className="space-y-6">
         {visibleFactors.map((factor) => {
           const options = getOptionsForFactor(factor.id)
-          const selectedValue = getSelectedOption(factor.id)
+          const selectedOptionValue = getSelectedOption(factor.id)
+          const selectedValue = getSelectedValue(factor.id)
           const hasError = validationErrors.includes(factor.id)
+          const factorType = factor.factor_type || 'select'
 
           return (
             <div key={factor.id} className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label htmlFor={`factor-${factor.id}`} className="text-sm font-medium">
-                  {factor.name}
-                </Label>
-                {factor.is_required && (
-                  <Badge variant="outline" className="text-xs">
-                    Required
-                  </Badge>
-                )}
-              </div>
+              {/* Boolean type renders label inline with checkbox */}
+              {factorType !== 'boolean' && (
+                <div className="flex items-center gap-2">
+                  <Label htmlFor={`factor-${factor.id}`} className="text-sm font-medium">
+                    {factor.name}
+                  </Label>
+                  {factor.is_required && (
+                    <Badge variant="outline" className="text-xs">
+                      Required
+                    </Badge>
+                  )}
+                </div>
+              )}
 
-              {factor.description && (
+              {factor.description && factorType !== 'boolean' && (
                 <p className="text-sm text-muted-foreground">{factor.description}</p>
               )}
 
-              <Select
-                value={selectedValue}
-                onValueChange={(value) => handleChange(factor.id, value)}
-              >
-                <SelectTrigger
-                  id={`factor-${factor.id}`}
-                  className={hasError ? 'border-red-500' : ''}
+              {/* Select Type */}
+              {factorType === 'select' && (
+                <Select
+                  value={selectedOptionValue}
+                  onValueChange={(value) => handleSelectChange(factor.id, value)}
                 >
-                  <SelectValue placeholder={`Select ${factor.name.toLowerCase()}...`} />
-                </SelectTrigger>
-                <SelectContent>
-                  {options.map((option) => (
-                    <SelectItem key={option.id} value={String(option.id)}>
-                      {option.label}
-                      {formatPriceImpact(option)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <SelectTrigger
+                    id={`factor-${factor.id}`}
+                    className={hasError ? 'border-red-500' : ''}
+                  >
+                    <SelectValue placeholder={`Select ${factor.name.toLowerCase()}...`} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {options.map((option) => (
+                      <SelectItem key={option.id} value={String(option.id)}>
+                        {option.label}
+                        {formatPriceImpact(option)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {/* Boolean Type */}
+              {factorType === 'boolean' && (
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    id={`factor-${factor.id}`}
+                    checked={selectedValue === true}
+                    onCheckedChange={(checked) => handleBooleanChange(factor.id, checked)}
+                    className={hasError ? 'border-red-500' : ''}
+                  />
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor={`factor-${factor.id}`} className="text-sm font-medium cursor-pointer">
+                      {factor.name}
+                    </Label>
+                    {factor.is_required && (
+                      <Badge variant="outline" className="text-xs">
+                        Required
+                      </Badge>
+                    )}
+                  </div>
+                  {factor.description && (
+                    <span className="text-sm text-muted-foreground">- {factor.description}</span>
+                  )}
+                </div>
+              )}
+
+              {/* Number Type */}
+              {factorType === 'number' && (
+                <Input
+                  id={`factor-${factor.id}`}
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={selectedValue ?? ''}
+                  onChange={(e) => handleNumberChange(factor.id, e.target.value)}
+                  placeholder={`Enter ${factor.name.toLowerCase()}...`}
+                  className={hasError ? 'border-red-500' : ''}
+                />
+              )}
 
               {hasError && (
                 <div className="flex items-center gap-1 text-sm text-red-500">

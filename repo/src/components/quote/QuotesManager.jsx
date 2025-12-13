@@ -7,7 +7,7 @@ import { FileText } from 'lucide-react'
  * QuotesManager - Main quotes management interface
  * Handles navigation between list and detail views
  */
-export function QuotesManager() {
+export function QuotesManager({ onEditQuote }) {
   const [selectedQuote, setSelectedQuote] = React.useState(null)
 
   const handleSelectQuote = (quote) => {
@@ -41,6 +41,7 @@ export function QuotesManager() {
           quote={selectedQuote}
           onBack={handleBack}
           onQuoteUpdated={handleQuoteUpdated}
+          onEdit={onEditQuote}
         />
       ) : (
         <QuoteList onSelectQuote={handleSelectQuote} />

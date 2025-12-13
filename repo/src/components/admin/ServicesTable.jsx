@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog'
 import { Badge } from '@/components/ui/Badge'
 import { Pencil, Trash2, Plus } from 'lucide-react'
+import { CURRENCY_SYMBOL } from '@/lib/currency'
 import api from '@/services'
 
 export function ServicesTable({ services, onRefresh }) {
@@ -94,7 +95,7 @@ export function ServicesTable({ services, onRefresh }) {
             <TableRow key={service.id}>
               <TableCell className="font-medium">{service.name}</TableCell>
               <TableCell className="max-w-[300px] truncate">{service.description}</TableCell>
-              <TableCell className="text-right">${service.base_price.toLocaleString()}</TableCell>
+              <TableCell className="text-right">{CURRENCY_SYMBOL}{service.base_price.toLocaleString()}</TableCell>
               <TableCell>
                 <Badge variant={service.is_active !== false ? 'default' : 'secondary'}>
                   {service.is_active !== false ? 'Active' : 'Inactive'}
@@ -146,7 +147,7 @@ export function ServicesTable({ services, onRefresh }) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="base_price">Base Price ($)</Label>
+              <Label htmlFor="base_price">Base Price ({CURRENCY_SYMBOL})</Label>
               <Input
                 id="base_price"
                 type="number"
